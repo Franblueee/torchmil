@@ -2769,7 +2769,7 @@ The PMF module consists of three T2T modules with different kernel sizes, <span 
 See <a href="../../nn/transformers/irpe_transformer/">iRPETransformer</a> for further information.</p>
 <p>Finally, using the class token computed by the SET module, the model predicts the bag label <span class="arithmatex">\(\hat{Y}\)</span> using a linear layer.</p>
 <p><strong>Note.</strong> When <code>use_pmf=True</code>, the input bag is reshaped to a square shape, and the PMF module is applied.
-This modifies the bag structure unreversibly, and thus attention values cannot be computed. 
+This modifies the bag structure unreversibly, and thus attention values cannot be computed.
 If <code>return_att=True</code>, the attention values will be set to zeros.</p>
 
 

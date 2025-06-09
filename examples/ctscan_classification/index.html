@@ -2811,27 +2811,28 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
 <span class="c1"># torchmil&#39;s facilities</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torchmil.visualize.vis_ctscan</span><span class="w"> </span><span class="kn">import</span> <span class="n">slices_to_canvas</span><span class="p">,</span> <span class="n">draw_slices_contour</span>
 
-<span class="n">CSV_PATH</span> <span class="o">=</span> <span class="s1">&#39;/data/datasets/RSNA_ICH/bags_train.csv&#39;</span> 
-<span class="n">IMG_PATH</span> <span class="o">=</span> <span class="s1">&#39;/data/datasets/RSNA_ICH/original/&#39;</span>
+<span class="n">CSV_PATH</span> <span class="o">=</span> <span class="s2">&quot;/data/datasets/RSNA_ICH/bags_train.csv&quot;</span>
+<span class="n">IMG_PATH</span> <span class="o">=</span> <span class="s2">&quot;/data/datasets/RSNA_ICH/original/&quot;</span>
 
 <span class="c1"># Randomly select a bag</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">CSV_PATH</span><span class="p">)</span>
-<span class="n">bag_names</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;bag_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
-<span class="n">bag_name</span> <span class="o">=</span> <span class="n">bag_names</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">bag_names</span><span class="p">))]</span> <span class="c1"># Randomly select a bag</span>
+<span class="n">bag_names</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;bag_name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+<span class="n">bag_name</span> <span class="o">=</span> <span class="n">bag_names</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">bag_names</span><span class="p">))]</span>  <span class="c1"># Randomly select a bag</span>
 
-<span class="n">bag_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;bag_name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">bag_name</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;order&#39;</span><span class="p">)</span>
-<span class="n">inst_names</span> <span class="o">=</span> <span class="n">bag_df</span><span class="p">[</span><span class="s1">&#39;instance_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-<span class="n">inst_labels</span> <span class="o">=</span> <span class="n">bag_df</span><span class="p">[</span><span class="s1">&#39;instance_label&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-<span class="n">inst_names_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">inst_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">inst_name</span> <span class="ow">in</span> <span class="n">inst_names</span><span class="p">]</span>
-<span class="n">inst_imgs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">IMG_PATH</span> <span class="o">+</span> <span class="n">inst_name</span> <span class="o">+</span> <span class="s1">&#39;.npy&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">inst_name</span> <span class="ow">in</span> <span class="n">inst_names_list</span><span class="p">]</span>
+<span class="n">bag_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;bag_name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">bag_name</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">)</span>
+<span class="n">inst_names</span> <span class="o">=</span> <span class="n">bag_df</span><span class="p">[</span><span class="s2">&quot;instance_name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">inst_labels</span> <span class="o">=</span> <span class="n">bag_df</span><span class="p">[</span><span class="s2">&quot;instance_label&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">inst_names_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">inst_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">inst_name</span> <span class="ow">in</span> <span class="n">inst_names</span><span class="p">]</span>
+<span class="n">inst_imgs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">IMG_PATH</span> <span class="o">+</span> <span class="n">inst_name</span> <span class="o">+</span> <span class="s2">&quot;.npy&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">inst_name</span> <span class="ow">in</span> <span class="n">inst_names_list</span><span class="p">]</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This scan has </span><span class="si">{}</span><span class="s2"> slices&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">inst_imgs</span><span class="p">)))</span>
 
 <span class="c1"># Using torchmil&#39;s functions</span>
-<span class="n">canvas</span> <span class="o">=</span> <span class="n">slices_to_canvas</span><span class="p">(</span><span class="n">inst_imgs</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span> 
-<span class="n">canvas_contours</span> <span class="o">=</span> <span class="n">draw_slices_contour</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="n">slice_size</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span> <span class="n">contour_prop</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">)</span>
+<span class="n">canvas</span> <span class="o">=</span> <span class="n">slices_to_canvas</span><span class="p">(</span><span class="n">inst_imgs</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+<span class="n">canvas_contours</span> <span class="o">=</span> <span class="n">draw_slices_contour</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="n">slice_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">contour_prop</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">((</span><span class="n">canvas_contours</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
@@ -2874,10 +2875,10 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
 
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">RSNAMILDataset</span><span class="p">(</span>
-    <span class="n">root</span><span class="o">=</span><span class="s1">&#39;/data/datasets/RSNA_ICH/MIL_processed/&#39;</span><span class="p">,</span>
-    <span class="n">features</span><span class="o">=</span><span class="s1">&#39;resnet50&#39;</span><span class="p">,</span>
-    <span class="n">partition</span><span class="o">=</span><span class="s1">&#39;train&#39;</span><span class="p">,</span>
-    <span class="n">load_at_init</span><span class="o">=</span><span class="kc">True</span>
+    <span class="n">root</span><span class="o">=</span><span class="s2">&quot;/data/datasets/RSNA_ICH/MIL_processed/&quot;</span><span class="p">,</span>
+    <span class="n">features</span><span class="o">=</span><span class="s2">&quot;resnet50&quot;</span><span class="p">,</span>
+    <span class="n">partition</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span>
+    <span class="n">load_at_init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># Split the dataset into train and validation sets</span>
@@ -2891,10 +2892,10 @@
 <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">subset</span><span class="p">(</span><span class="n">idx_val</span><span class="p">)</span>
 
 <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">RSNAMILDataset</span><span class="p">(</span>
-    <span class="n">root</span><span class="o">=</span><span class="s1">&#39;/data/datasets/RSNA_ICH/MIL_processed/&#39;</span><span class="p">,</span>
-    <span class="n">features</span><span class="o">=</span><span class="s1">&#39;resnet50&#39;</span><span class="p">,</span>
-    <span class="n">partition</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">,</span>
-    <span class="n">load_at_init</span><span class="o">=</span><span class="kc">True</span>
+    <span class="n">root</span><span class="o">=</span><span class="s2">&quot;/data/datasets/RSNA_ICH/MIL_processed/&quot;</span><span class="p">,</span>
+    <span class="n">features</span><span class="o">=</span><span class="s2">&quot;resnet50&quot;</span><span class="p">,</span>
+    <span class="n">partition</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+    <span class="n">load_at_init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -2957,14 +2958,20 @@
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">64</span>
 
 <span class="c1"># Create dataloaders</span>
-<span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span><span class="p">)</span>
-<span class="n">val_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">val_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span><span class="p">)</span>
-<span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span><span class="p">)</span>
+<span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span>
+<span class="p">)</span>
+<span class="n">val_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">val_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span>
+<span class="p">)</span>
+<span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">test_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span>
+<span class="p">)</span>
 
 
 <span class="n">it</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">)</span>
 <span class="n">batch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
-<span class="n">data_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">)</span>
+<span class="n">data_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Batch: &quot;</span><span class="p">,</span> <span class="n">batch</span><span class="p">)</span>
 </code></pre></div>
 
@@ -3004,7 +3011,8 @@
 <div class="input">
 
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">torchmil.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">TransformerABMIL</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">TransformerABMIL</span><span class="p">(</span><span class="n">in_shape</span> <span class="o">=</span> <span class="n">data_shape</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">TransformerABMIL</span><span class="p">(</span><span class="n">in_shape</span><span class="o">=</span><span class="n">data_shape</span><span class="p">)</span>
 </code></pre></div>
 
 </div>
@@ -3026,26 +3034,25 @@
 
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">torchmil.utils.trainer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Trainer</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torchmetrics</span>
+
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">5e-5</span><span class="p">)</span>
-<span class="n">device</span> <span class="o">=</span> <span class="s1">&#39;cuda&#39;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;cpu&#39;</span>
+<span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
 
 <span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
     <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
     <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
     <span class="n">metrics_dict</span><span class="o">=</span><span class="p">{</span>
-        <span class="s1">&#39;auroc&#39;</span><span class="p">:</span> <span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
-        <span class="s1">&#39;acc&#39;</span><span class="p">:</span> <span class="n">torchmetrics</span><span class="o">.</span><span class="n">Accuracy</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="s2">&quot;auroc&quot;</span><span class="p">:</span> <span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
+        <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">torchmetrics</span><span class="o">.</span><span class="n">Accuracy</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
     <span class="p">},</span>
-    <span class="n">obj_metric</span><span class="o">=</span><span class="s1">&#39;BCEWithLogitsLoss&#39;</span><span class="p">,</span>
-    <span class="n">obj_metric_mode</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span>
-    <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>
+    <span class="n">obj_metric</span><span class="o">=</span><span class="s2">&quot;BCEWithLogitsLoss&quot;</span><span class="p">,</span>
+    <span class="n">obj_metric_mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
-    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">train_dataloader</span><span class="o">=</span><span class="n">train_dataloader</span><span class="p">,</span>
-    <span class="n">val_dataloader</span><span class="o">=</span><span class="n">val_dataloader</span>
+    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">train_dataloader</span><span class="o">=</span><span class="n">train_dataloader</span><span class="p">,</span> <span class="n">val_dataloader</span><span class="o">=</span><span class="n">val_dataloader</span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -3120,11 +3127,11 @@ Typically, in MIL datasets, there are more negative bags than positive bags.</p>
     <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
     <span class="c1"># predict bag label using our model</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;mask&#39;</span><span class="p">])</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;mask&quot;</span><span class="p">])</span>
     <span class="n">Y_pred</span> <span class="o">=</span> <span class="p">(</span><span class="n">out</span> <span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
 
     <span class="n">Y_pred_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Y_pred</span><span class="p">)</span>
-    <span class="n">Y_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+    <span class="n">Y_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">])</span>
 
 <span class="n">Y_pred</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">Y_pred_list</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 <span class="n">Y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">Y_list</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
