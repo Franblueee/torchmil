@@ -518,6 +518,19 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Datasets in torchmil
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -529,6 +542,52 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-processedmildataset-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      The ProcessedMILDataset class
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extending-the-processedmildataset-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extending the ProcessedMILDataset class.
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-your-own-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating your own dataset
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -2099,12 +2158,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/models/dftdmil.md" class="md-nav__link">
+      <a href="../../api/models/dtfdmil/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    None
+    DFTDMIL
     
   </span>
   
@@ -2713,7 +2772,438 @@
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="datasets">Datasets</h1>
-<p>Coming soon...</p>
+<p><tt>torchmil</tt> provides a framework to instantiate datasets for Multiple Instance Learning (MIL) problems. It allows users to create custom datasets that suit their specific needs. In addition, <tt>torchmil</tt> includes some pre-defined datasets that can be used directly. These correspond to popular benchmark datasets in the field of MIL, such as <a href="https://camelyon16.grand-challenge.org/">Camelyon16</a>. See <a href="../../api/datasets/"><tt><b>torchmil.datasets</b></tt></a> for a complete list of the datasets available in <tt>torchmil</tt>.</p>
+<p>In the following, we explain the logic behind the design of datasets in <tt>torchmil</tt>, the required data and folder structure, and how to create your own dataset. We will also provide a simple example of how to use the <code>ProcessedMILDataset</code> class to create a custom dataset.</p>
+<div class="admonition question">
+<p class="admonition-title">Data representation in <tt>torchmil</tt></p>
+<p>Take a look at the <a href="../data_representation/">data representation example</a> example to see how the data is represented in <tt>torchmil</tt>.</p>
+<p>In <tt><b>torchmil</b></tt>, bags are represented as a <code>TensorDict</code> object with at least the following properties:</p>
+<ul>
+<li><code>bag['X']</code>: it is usually called <em>bag feature matrix</em>, since it represents feature vectors extracted from the raw representation of the instances. </li>
+<li><code>bag['Y']</code>: it represents the label of the bag. </li>
+</ul>
+<p>Additionally, a bag may contain other properties. The most common ones are:</p>
+<ul>
+<li><code>bag['y_inst']</code>: it contains the labels of the instances in the bag. </li>
+<li><code>bag['adj']</code>: it contains the adjacency matrix of the bag, which represents the relationships between the instances in the bag.</li>
+<li><code>bag['coords']</code>: it contains the coordinates of the instances in the bag, which represent the absolute position of the instances in the bag.</li>
+</ul>
+</div>
+<h2 id="the-processedmildataset-class">The <code>ProcessedMILDataset</code> class</h2>
+<p>The <a href="../../api/datasets/processed_mil_dataset/">ProcessedMILDataset class</a> allows for efficient loading and processing of large datasets. To enable this, it expects each bag to have been pre-processed, saving its properties in separate files:
+- A feature file should yield an array of shape <code>(bag_size, ...)</code>, where <code>...</code> represents the shape of the features.
+- A label file should yield an array of shape arbitrary shape, e.g., <code>(1,)</code> for binary classification.
+- An instance label file should yield an array of shape <code>(bag_size, ...)</code>, where <code>...</code> represents the shape of the instance labels.
+- A coordinates file should yield an array of shape <code>(bag_size, coords_dim)</code>, where <code>coords_dim</code> is the dimension of the coordinates.</p>
+<p>The path to these properties should be specified in the <code>__init__</code> method of the <code>ProcessedMILDataset</code> class. To illustrate this behaviour, let's load the CAMELYON16 dataset:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">torchmil.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcessedMILDataset</span>
+
+<span class="n">dataset_dir</span> <span class="o">=</span> <span class="s2">&quot;/data/datasets/CAMELYON16&quot;</span>
+<span class="n">features_path</span> <span class="o">=</span> <span class="s2">&quot;/data/datasets/CAMELYON16/patches_512_preset/features_UNI/&quot;</span>
+<span class="n">labels_path</span> <span class="o">=</span> <span class="s2">&quot;/data/datasets/CAMELYON16/patches_512_preset/labels/&quot;</span>
+<span class="n">inst_labels_path</span> <span class="o">=</span> <span class="s2">&quot;/data/datasets/CAMELYON16/patches_512_preset/patch_labels/&quot;</span>
+<span class="n">coords_path</span> <span class="o">=</span> <span class="s2">&quot;/data/datasets/CAMELYON16/patches_512_preset/coords/&quot;</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">ProcessedMILDataset</span><span class="p">(</span>
+    <span class="n">features_path</span><span class="o">=</span><span class="n">features_path</span><span class="p">,</span>
+    <span class="n">labels_path</span><span class="o">=</span><span class="n">labels_path</span><span class="p">,</span>
+    <span class="n">inst_labels_path</span><span class="o">=</span><span class="n">inst_labels_path</span><span class="p">,</span>
+    <span class="n">coords_path</span><span class="o">=</span><span class="n">coords_path</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of bags: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>Number of bags: 399
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As you can see, we have specified the path to the properties of each bag. The <code>ProcessedMILDataset</code> class will load the properties of each bag from the specified files assuming the following structure:
+<div class="highlight"><pre><span></span><code>features_path/
+├── bag1.npy
+├── bag2.npy
+└── ...
+labels_path/
+├── bag1.npy
+├── bag2.npy
+└── ...
+inst_labels_path/
+├── bag1.npy
+├── bag2.npy
+└── ...
+coords_path/
+├── bag1.npy
+├── bag2.npy
+└── ...
+</code></pre></div>
+Let's take a look at one of the bags:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">bag</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">bag</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">bag</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>X: torch.Size([1983, 1024])
+Y: torch.Size([1])
+y_inst: torch.Size([1983])
+adj: torch.Size([1983, 1983])
+coords: torch.Size([1983, 2])
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>When the <code>__getitem__</code> method is called, the <code>ProcessedMILDataset</code> class builds the bag. First, it loads the properties of the bag from the specified files. Then, if the coordinates have been provided, it builds the adjacency matrix of the bag (see the documentation for more details). Finally, it creates a <code>TensorDict</code> object with the properties of the bag. The <code>__getitem__</code> method then returns the <code>TensorDict</code> object with the properties of the bag.</p>
+<p>We can choose which bags we want to load using the <code>bag_names</code> argument:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">bag_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;test_001&quot;</span><span class="p">,</span> <span class="s2">&quot;test_002&quot;</span><span class="p">]</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">ProcessedMILDataset</span><span class="p">(</span>
+    <span class="n">features_path</span><span class="o">=</span><span class="n">features_path</span><span class="p">,</span>
+    <span class="n">labels_path</span><span class="o">=</span><span class="n">labels_path</span><span class="p">,</span>
+    <span class="n">inst_labels_path</span><span class="o">=</span><span class="n">inst_labels_path</span><span class="p">,</span>
+    <span class="n">coords_path</span><span class="o">=</span><span class="n">coords_path</span><span class="p">,</span>
+    <span class="n">bag_names</span><span class="o">=</span><span class="n">bag_names</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of bags: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">bag</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">bag</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">bag</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>Number of bags: 2
+X: torch.Size([12255, 1024])
+Y: torch.Size([1])
+y_inst: torch.Size([12255])
+adj: torch.Size([12255, 12255])
+coords: torch.Size([12255, 2])
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can choose which properties we want to load using the <code>bag_keys</code> argument. For example, if we want to load only the features and the labels of the bags, we can do it as follows:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">dataset</span> <span class="o">=</span> <span class="n">ProcessedMILDataset</span><span class="p">(</span>
+    <span class="n">features_path</span><span class="o">=</span><span class="n">features_path</span><span class="p">,</span>
+    <span class="n">labels_path</span><span class="o">=</span><span class="n">labels_path</span><span class="p">,</span>
+    <span class="n">inst_labels_path</span><span class="o">=</span><span class="n">inst_labels_path</span><span class="p">,</span>
+    <span class="n">coords_path</span><span class="o">=</span><span class="n">coords_path</span><span class="p">,</span>
+    <span class="n">bag_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of bags: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">bag</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">bag</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">bag</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>Number of bags: 399
+X: torch.Size([1983, 1024])
+Y: torch.Size([1])
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Feel free to see all the options in the <a href="../../api/datasets/processed_mil_dataset/">documentation</a>.</p>
+<h2 id="extending-the-processedmildataset-class">Extending the <code>ProcessedMILDataset</code> class.</h2>
+<p>The <code>ProcessedMILDataset</code> can be extended to add custom functionalities. One example is the <code>BinaryClassificationDataset</code> class, which is a subclass of <code>ProcessedMILDataset</code> that is tailored for binary classification tasks. It assumes that the bag label <span class="arithmatex">\(Y\)</span> and the instance labels <span class="arithmatex">\(\left\{ y_1, \ldots, y_N \right\}\)</span> are binary values, i.e., they can take values in <span class="arithmatex">\(\left\{ 0, 1 \right\}\)</span>. The class also assumes that the bag label is the maximum of the instance labels, i.e.,</p>
+<div class="arithmatex">\[
+\begin{gather}
+Y = \max \left\{ y_1, \ldots, y_N \right\}.
+\end{gather}
+\]</div>
+<p>Let's take a look at the implementation to illustrate how to extend the <code>ProcessedMILDataset</code> class. The <code>BinaryClassificationDataset</code> class is implemented as follows:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BinaryClassificationDataset</span><span class="p">(</span><span class="n">ProcessedMILDataset</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">features_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">labels_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">inst_labels_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">coords_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bag_names</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bag_keys</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;y_inst&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="s2">&quot;coords&quot;</span><span class="p">],</span>
+        <span class="n">dist_thr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span>
+        <span class="n">adj_with_dist</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">norm_adj</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">load_at_init</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">features_path</span><span class="o">=</span><span class="n">features_path</span><span class="p">,</span>
+            <span class="n">labels_path</span><span class="o">=</span><span class="n">labels_path</span><span class="p">,</span>
+            <span class="n">inst_labels_path</span><span class="o">=</span><span class="n">inst_labels_path</span><span class="p">,</span>
+            <span class="n">coords_path</span><span class="o">=</span><span class="n">coords_path</span><span class="p">,</span>
+            <span class="n">bag_names</span><span class="o">=</span><span class="n">bag_names</span><span class="p">,</span>
+            <span class="n">bag_keys</span><span class="o">=</span><span class="n">bag_keys</span><span class="p">,</span>
+            <span class="n">dist_thr</span><span class="o">=</span><span class="n">dist_thr</span><span class="p">,</span>
+            <span class="n">adj_with_dist</span><span class="o">=</span><span class="n">adj_with_dist</span><span class="p">,</span>
+            <span class="n">norm_adj</span><span class="o">=</span><span class="n">norm_adj</span><span class="p">,</span>
+            <span class="n">load_at_init</span><span class="o">=</span><span class="n">load_at_init</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fix_inst_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inst_labels</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make sure that instance labels have shape (bag_size,).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">inst_labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">inst_labels</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">inst_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">inst_labels</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inst_labels</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fix_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make sure that labels have shape ().</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">labels</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_inst_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">inst_labels</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_load_inst_labels</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">inst_labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fix_inst_labels</span><span class="p">(</span><span class="n">inst_labels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inst_labels</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_load_labels</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fix_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">labels</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_consistency_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bag_dict</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the instance labels are consistent with the bag label.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;Y&#39;</span> <span class="ow">in</span> <span class="n">bag_dict</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;y_inst&#39;</span> <span class="ow">in</span> <span class="n">bag_dict</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">bag_dict</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="p">(</span><span class="n">bag_dict</span><span class="p">[</span><span class="s1">&#39;y_inst&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">():</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Instance labels (max(y_inst)=</span><span class="si">{</span><span class="p">(</span><span class="n">bag_dict</span><span class="p">[</span><span class="s1">&#39;y_inst&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">}</span><span class="s2">) are not consistent with bag label (Y=</span><span class="si">{</span><span class="n">bag_dict</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">) for bag </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">. Setting all instance labels to -1 (unknown).&quot;</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="n">bag_dict</span><span class="p">[</span><span class="s1">&#39;y_inst&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">bag_dict</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">bag_dict</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">bag_dict</span><span class="p">[</span><span class="s1">&#39;y_inst&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">bag_dict</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Instance labels not found for bag </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">. Setting all to -1.&#39;</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="n">bag_dict</span><span class="p">[</span><span class="s1">&#39;y_inst&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">bag_dict</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bag_dict</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_bag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="n">bag_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_load_bag</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">bag_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_consistency_check</span><span class="p">(</span><span class="n">bag_dict</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bag_dict</span>
+</code></pre></div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As you can see, we have added explicit comprobations to ensure that the above conditions are fullfilled. If they are not, a warning is shown on the output stream. All we need to do is to override the corresponding methods to add the desired functionality.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="creating-your-own-dataset">Creating your own dataset</h2>
+<p>Finally, let's implement a custom dataset. For this, we will use the <a href="../../api/datasets/wsi_dataset/"><code>WSIDataset</code> class</a>, which assumes that the bags are Whole Slide Images (WSIs). It also gives the coordinates of the patches (<code>coords</code>) a special treatment, normalizing their values.</p>
+<p>We are going to use the slides from the <a href="https://www.gtexportal.org/home/">Genotype-Tissue Expression (GTEx) Project</a>, which can be downloaded for free. Particularly, we will use slides of <tt>UrinaryBladder</tt> tissue. </p>
+<p>To create the dataset, we must first extract the <code>coords</code> of the patches from the original <tt>.tiff</tt> files and then extract <code>features</code> from those patches. To achieve that, a tool like <a href="https://github.com/mahmoodlab/CLAM">CLAM</a> can be used. We will assume that no fine-grained annotations, so we will not have access to <code>labels</code> or <code>inst_labels</code>. We have extracted the features using the foundation model <a href="https://huggingface.co/MahmoodLab/UNI">UNI</a>.</p>
+<p>Then, creating the dataset is as simple as defining a new class that extends <code>WSIDataset</code>:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">torchmil.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">WSIDataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchmil.utils.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_csv</span><span class="p">,</span> <span class="n">keep_only_existing_files</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GTExUrinaryBladderDataset</span><span class="p">(</span><span class="n">WSIDataset</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">root</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">features</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;UNI&#39;</span><span class="p">,</span>
+        <span class="n">bag_keys</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="s2">&quot;coords&quot;</span><span class="p">],</span>
+        <span class="n">patch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span>
+        <span class="n">adj_with_dist</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">norm_adj</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">load_at_init</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">features_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s1">/patches_</span><span class="si">{</span><span class="n">patch_size</span><span class="si">}</span><span class="s1">/features/features_</span><span class="si">{</span><span class="n">features</span><span class="si">}</span><span class="s1">/&#39;</span>
+        <span class="n">labels_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s1">/patches_</span><span class="si">{</span><span class="n">patch_size</span><span class="si">}</span><span class="s1">/labels/&#39;</span>
+        <span class="n">patch_labels_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s1">/patches_</span><span class="si">{</span><span class="n">patch_size</span><span class="si">}</span><span class="s1">/inst_labels/&#39;</span>
+        <span class="n">coords_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s1">/patches_</span><span class="si">{</span><span class="n">patch_size</span><span class="si">}</span><span class="s1">/coords/&#39;</span>
+
+        <span class="c1"># This csv is generated by CLAM, with slide_id containing &quot;bag_name.format&quot;</span>
+        <span class="n">bag_names_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s1">/patches_</span><span class="si">{</span><span class="n">patch_size</span><span class="si">}</span><span class="s1">/process_list_autogen.csv&#39;</span>
+        <span class="n">dict_list</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="n">bag_names_file</span><span class="p">)</span>
+        <span class="n">wsi_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;slide_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">dict_list</span><span class="p">]))</span>
+        <span class="n">wsi_names</span> <span class="o">=</span> <span class="n">keep_only_existing_files</span><span class="p">(</span><span class="n">features_path</span><span class="p">,</span> <span class="n">wsi_names</span><span class="p">)</span>
+
+        <span class="n">WSIDataset</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">features_path</span><span class="o">=</span><span class="n">features_path</span><span class="p">,</span>
+            <span class="n">labels_path</span><span class="o">=</span><span class="n">labels_path</span><span class="p">,</span>
+            <span class="n">patch_labels_path</span><span class="o">=</span><span class="n">patch_labels_path</span><span class="p">,</span>
+            <span class="n">coords_path</span><span class="o">=</span><span class="n">coords_path</span><span class="p">,</span>
+            <span class="n">wsi_names</span><span class="o">=</span><span class="n">wsi_names</span><span class="p">,</span>
+            <span class="n">bag_keys</span><span class="o">=</span><span class="n">bag_keys</span><span class="p">,</span>
+            <span class="n">patch_size</span><span class="o">=</span><span class="n">patch_size</span><span class="p">,</span>
+            <span class="n">adj_with_dist</span><span class="o">=</span><span class="n">adj_with_dist</span><span class="p">,</span>
+            <span class="n">norm_adj</span><span class="o">=</span><span class="n">norm_adj</span><span class="p">,</span>
+            <span class="n">load_at_init</span><span class="o">=</span><span class="n">load_at_init</span>
+        <span class="p">)</span>
+</code></pre></div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We have now defined our new <code>GTExUrinaryBladderDataset</code> class. We can now instantiate it, using as <code>bag_keys</code> only the features <code>X</code> and the adjacency matrix <code>adj</code>.  We only have to specify the root path! We will use <code>load_at_init = False</code> so that the features of the slides are only loaded when needed.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># This is my root, change it to your own!</span>
+<span class="n">root</span> <span class="o">=</span> <span class="s1">&#39;/data/data_fjaviersaezm/GTExTorchmil/UrinaryBladder/&#39;</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">GTExUrinaryBladderDataset</span><span class="p">(</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">root</span><span class="p">,</span> 
+    <span class="n">features</span><span class="o">=</span><span class="s1">&#39;UNI&#39;</span><span class="p">,</span> 
+    <span class="n">bag_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;adj&#39;</span><span class="p">],</span> 
+    <span class="n">patch_size</span><span class="o">=</span><span class="mi">512</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">bag_names</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>['GTEX-N7MS-2125', 'GTEX-N7MT-1825', 'GTEX-NFK9-2125']
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Great! The dataset object initialized without problems. Now we can display a bag, which is returned as a <code>dict</code>.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">el</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">el</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">el</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>X: torch.Size([825, 1024])
+adj: torch.Size([825, 825])
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Nice! The dataset has correctly loaded the <code>X</code> tensor and has built the adjacency matrix <code>adj</code>. We can already use this bag as input for a MIL model!</p>
 </div>
 </div>
 </div>

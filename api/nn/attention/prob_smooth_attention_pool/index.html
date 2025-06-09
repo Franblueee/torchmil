@@ -2156,12 +2156,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../models/dftdmil.md" class="md-nav__link">
+      <a href="../../../models/dtfdmil/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    None
+    DFTDMIL
     
   </span>
   
@@ -2923,14 +2923,20 @@ With these samples, the bag representation is computed as:</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-            <b><code>return_att</code></b>
+            <b><code>return_att_samples</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>False</code>
+)
           –
           <div class="doc-md-description">
-            <p>If True, returns a sample from the attention distribution <code>f</code> in addition to <code>z</code>.</p>
+            <p>If True, returns samples from the attention distribution <code>f</code> in addition to <code>z</code>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-            <b><code>return_attdist</code></b>
+            <b><code>return_att_dist</code></b>
+              (<code><span title="bool">bool</span></code>, default:
+                  <code>False</code>
+)
           –
           <div class="doc-md-description">
             <p>If True, returns the attention distribution (<code>mu_f</code>, <code>diag_Sigma_f</code>) in addition to <code>z</code>.</p>
@@ -2972,7 +2978,7 @@ With these samples, the bag representation is computed as:</p>
 <b><code>f</code></b> (              <code><span title="torch.Tensor">Tensor</span></code>
 )          –
           <div class="doc-md-description">
-            <p>Sample from the attention distribution of shape <code>(batch_size, bag_size, n_samples)</code>. Only returned when <code>return_att_samples=True</code>.</p>
+            <p>Samples from the attention distribution of shape <code>(batch_size, bag_size, n_samples)</code>. Only returned when <code>return_att_samples=True</code>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">

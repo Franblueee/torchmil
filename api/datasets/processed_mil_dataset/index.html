@@ -2154,12 +2154,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../models/dftdmil.md" class="md-nav__link">
+      <a href="../../models/dtfdmil/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    None
+    DFTDMIL
     
   </span>
   
@@ -2801,6 +2801,15 @@ coords_path/ (if &quot;coords&quot; or &quot;adj&quot; in bag_keys)
  \end{equation}</p>
 <p>where <span class="arithmatex">\(\mathbf{c}_i\)</span> and <span class="arithmatex">\(\mathbf{c}_j\)</span> are the coordinates of the instances <span class="arithmatex">\(i\)</span> and <span class="arithmatex">\(j\)</span>, respectively, <span class="arithmatex">\(\text{dist_thr}\)</span> is a threshold distance,
  and <span class="arithmatex">\(\mathbf{x}_i \in \mathbb{R}^d\)</span> and <span class="arithmatex">\(\mathbf{x}_j \in \mathbb{R}^d\)</span> are the features of instances <span class="arithmatex">\(i\)</span> and <span class="arithmatex">\(j\)</span>, respectively.</p>
+<p><strong>How bags are built.</strong>
+ When the <code>__getitem__</code> method is called, the bag is built as follows (pseudocode):
+ 1. The <code>__getitem__</code> method is called with an index.
+ 2. The bag name is retrieved from the list of bag names.
+ 3. The <code>_build_bag</code> method is called with the bag name:
+     3.1. The <code>_build_bag</code> method loads the bag from disk using the <code>_load_bag</code> method. This method loads the features, labels, instance labels and coordinates from disk using the <code>_load_features</code>, <code>_load_labels</code>, <code>_load_inst_labels</code> and <code>_load_coords</code> methods.
+     3.2. If the coordinates have been provided, it builds the adjacency matrix using the <code>_build_adj</code> method.
+ 4. The bag is returned as a dictionary containing the keys defined in <code>bag_keys</code> and their corresponding values.
+ This behaviour can be extended or modified by overriding the corresponding methods.</p>
 
 
 
@@ -2825,7 +2834,7 @@ coords_path/ (if &quot;coords&quot; or &quot;adj&quot; in bag_keys)
 
 
 <h5 id="torchmil.datasets.ProcessedMILDataset.__init__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">features_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">labels_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inst_labels_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">coords_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bag_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bag_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;y_inst&#39;</span><span class="p">,</span> <span class="s1">&#39;adj&#39;</span><span class="p">,</span> <span class="s1">&#39;coords&#39;</span><span class="p">],</span> <span class="n">dist_thr</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">adj_with_dist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">norm_adj</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">load_at_init</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">features_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">labels_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inst_labels_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">coords_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bag_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bag_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;y_inst&#39;</span><span class="p">,</span> <span class="s1">&#39;adj&#39;</span><span class="p">,</span> <span class="s1">&#39;coords&#39;</span><span class="p">],</span> <span class="n">dist_thr</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">adj_with_dist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">norm_adj</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">load_at_init</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 </h5>
 
@@ -2935,7 +2944,7 @@ coords_path/ (if &quot;coords&quot; or &quot;adj&quot; in bag_keys)
         <li class="doc-section-item field-body">
             <b><code>load_at_init</code></b>
               (<code><span title="bool">bool</span></code>, default:
-                  <code>True</code>
+                  <code>False</code>
 )
           –
           <div class="doc-md-description">

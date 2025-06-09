@@ -2176,12 +2176,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/models/dftdmil.md" class="md-nav__link">
+      <a href="../../api/models/dtfdmil/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    None
+    DFTDMIL
     
   </span>
   
@@ -2821,12 +2821,12 @@ The labels of the instances are <span class="arithmatex">\(\mathbf{y} = \left[ y
 <p>This example is the most common in MIL, but there are many other possibilities. </p>
 </div>
 <h2 id="how-bags-are-represented-in-torchmil">How bags are represented in torchmil?</h2>
-<p>In <tt><b>torchmil</b></tt>, bags are represented as a <code>TensorDict</code> object, which stores any kind of information about the bag. In most cases, a bag will contain at least the following keys:</p>
+<p>In <tt><b>torchmil</b></tt>, bags are represented as a <code>TensorDict</code> object, which stores any kind of information about the bag. In most cases, a bag will contain at least the following <em>properties</em>:</p>
 <ul>
 <li><code>bag['X']</code>: a tensor of shape <code>(bag_size, ...)</code> containing the instances in the bag. Usually, this tensor is called <em>bag feature matrix</em>, since these instances are feature vectors extracted from the raw representation of the instances. Therefore, in most cases it has shape <code>(bag_size, feature_dim)</code>. </li>
 <li><code>bag['Y']</code>: a tensor containing the label of the bag. In the simplest case, this tensor is a scalar, but it can be a tensor of any shape (e.g., in multi-class MIL).</li>
 </ul>
-<p>Additionally, a bag may contain other keys. The most common ones in <tt><b>torchmil</b></tt> are:</p>
+<p>Additionally, a bag may contain other <em>properties</em>. The most common ones in <tt><b>torchmil</b></tt> are:</p>
 <ul>
 <li><code>bag['y_inst']</code>: a tensor of shape <code>(bag_size, ...)</code> containing the labels of the instances in the bag. In the pure MIL setting, this tensor is only used for evaluation purposes since the label of the instances are not known. However, some methods may require some sort of supervision at the instance level.</li>
 <li><code>bag['adj']</code>: a tensor of shape <code>(bag_size, bag_size)</code> containing the adjacency matrix of the bag. This matrix is used to represent the relationships between the instances in the bag. The methods implemented in <a href="../../api/models/"><tt><b>torchmil.models</b></tt></a> allow this matrix to be a sparse tensor.</li>
