@@ -83,10 +83,10 @@ Take a look at [CONTRIBUTING.md](https://github.com/Franblueee/torchmil/blob/mai
 If you find this library useful, please consider citing it:
 
 ```bibtex
-@misc{torchmil,
-  author = {Castro-Mac{\'\i}as, Francisco M and S{\'a}ez-Maldonado, Francisco Javier and Morales Alvarez, Pablo and Molina, Rafael},
-  title = {torchmil: A PyTorch-based library for deep Multiple Instance Learning},
-  year = {2025},
-  howpublished = {\url{https://franblueee.github.io/torchmil/}}
+@article{castro2025torchmil,
+  title={torchmil: A PyTorch-based library for deep Multiple Instance Learning},
+  author={Castro-Mac{\'\i}as, Francisco M and S{\'a}ez-Maldonado, Francisco J and Morales-{\'A}lvarez, Pablo and Molina, Rafael},
+  journal={arXiv preprint arXiv:2509.08129},
+  year={2025}
 }
 ```
