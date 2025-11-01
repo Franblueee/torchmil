@@ -7,6 +7,7 @@ from .pandamil_dataset import PANDAMILDataset as PANDAMILDataset
 from .rsnamil_dataset import RSNAMILDataset as RSNAMILDataset
 
 from .toy_dataset import ToyDataset as ToyDataset
+from .corr_toy_dataset import ShiftedMeanMILDataset as ShiftedMeanMILDataset
 from .wsi_dataset import WSIDataset as WSIDataset
 from .ctscan_dataset import CTScanDataset as CTScanDataset
 
