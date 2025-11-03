@@ -1,4 +1,5 @@
 from .processed_mil_dataset import ProcessedMILDataset as ProcessedMILDataset
+from .trident_wsi_dataset import TridentWSIDataset as TridentWSIDataset
 from .binary_classification_dataset import (
     BinaryClassificationDataset as BinaryClassificationDataset,
 )

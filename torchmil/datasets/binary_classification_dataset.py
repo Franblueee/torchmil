@@ -45,6 +45,7 @@ class BinaryClassificationDataset(ProcessedMILDataset):
             adj_with_dist=adj_with_dist,
             norm_adj=norm_adj,
             load_at_init=load_at_init,
+            verbose=verbose,
         )
 
     def _fix_inst_labels(self, inst_labels):

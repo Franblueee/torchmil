@@ -11,6 +11,7 @@
 - [Toy Dataset](datasets/toy_dataset.md)
 - [CT Scan Dataset](datasets/ctscan_dataset.md)
 - [WSI Dataset](datasets/wsi_dataset.md)
+- [Trident WSI Dataset](datasets/trident_wsi_dataset.md)
 - [Binary classification Dataset](datasets/binary_classification_dataset.md)
 - [Camelyon16 MIL Dataset](datasets/camelyon16mil_dataset.md)
 - [PANDA MIL Dataset](datasets/pandamil_dataset.md)

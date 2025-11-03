@@ -11,6 +11,7 @@ This list is constantly updated with new datasets and examples, feel free to con
 - [Toy Dataset](toy_dataset.md)
 - [CT Scan Dataset](ctscan_dataset.md)
 - [WSI Dataset](wsi_dataset.md)
+- [Trident WSI Dataset](trident_wsi_dataset.md)
 - [Binary classification Dataset](binary_classification_dataset.md)
 - [Camelyon16 MIL Dataset](camelyon16mil_dataset.md)
 - [PANDA MIL Dataset](pandamil_dataset.md)
