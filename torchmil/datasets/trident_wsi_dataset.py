@@ -49,7 +49,7 @@ class TridentWSIDataset(WSIDataset):
         adj_with_dist: bool = False,
         norm_adj: bool = True,
         load_at_init: bool = True,
-        **kwargs
+        **kwargs,
     ) -> None:
         """
         Class constructor.
@@ -78,12 +78,15 @@ class TridentWSIDataset(WSIDataset):
         self.feature_extractor = feature_extractor
         self.magnification = magnification
         self.overlap_pixels = overlap_pixels
-        self.trident_folder = f"{magnification}x_{patch_size}px_{overlap_pixels}px_overlap/"
+        self.trident_folder = (
+            f"{magnification}x_{patch_size}px_{overlap_pixels}px_overlap/"
+        )
         self.kwargs = kwargs
 
-
         super().__init__(
-            features_path=base_path + self.trident_folder + f"features_{feature_extractor}/",
+            features_path=base_path
+            + self.trident_folder
+            + f"features_{feature_extractor}/",
             labels_path=labels_path,
             patch_labels_path=patch_labels_path,
             coords_path=base_path + self.trident_folder + "patches/",
@@ -99,7 +102,7 @@ class TridentWSIDataset(WSIDataset):
     def _load_labels(self, name: str) -> np.ndarray:
         """
         Load the labels of a bag from disk. This function adds the functionality of reading the bag labels from a CSV, checking if the provided path is a directory or a file.
-        To achieve this, it is assumed that the 
+        To achieve this, it is assumed that the
 
         Arguments:
             name: Name of the bag to load.
@@ -111,20 +114,24 @@ class TridentWSIDataset(WSIDataset):
         if os.path.isdir(self.labels_path):
             return super()._load_labels(name)
         else:
-            if not hasattr(self, 'labels_csv'):
+            if not hasattr(self, "labels_csv"):
                 self.labels_csv = pd.read_csv(os.path.join(self.labels_path))
-            if 'wsi_name_col' in self.kwargs and 'wsi_label_col' in self.kwargs:
-                wsi_name_col = self.kwargs['wsi_name_col']
-                wsi_label_col = self.kwargs['wsi_label_col']
+            if "wsi_name_col" in self.kwargs and "wsi_label_col" in self.kwargs:
+                wsi_name_col = self.kwargs["wsi_name_col"]
+                wsi_label_col = self.kwargs["wsi_label_col"]
                 try:
-                    labels = self.labels_csv.loc[self.labels_csv[wsi_name_col] == name, wsi_label_col].values
+                    labels = self.labels_csv.loc[
+                        self.labels_csv[wsi_name_col] == name, wsi_label_col
+                    ].values
                 except ValueError:
-                    raise ValueError(f"Could not read the label of the file {name} from the CSV file {self.labels_path}. Please check that the column names provided in 'wsi_name_col' and 'wsi_label_col' are correct.")
+                    raise ValueError(
+                        f"Could not read the label of the file {name} from the CSV file {self.labels_path}. Please check that the column names provided in 'wsi_name_col' and 'wsi_label_col' are correct."
+                    )
             else:
-                raise ValueError("When providing a CSV file for labels_path, you must provide 'wsi_name_col' and 'wsi_label_col' in the kwargs.")
+                raise ValueError(
+                    "When providing a CSV file for labels_path, you must provide 'wsi_name_col' and 'wsi_label_col' in the kwargs."
+                )
             return labels
-
-
 
     def _load_coords(self, name: str) -> np.ndarray:
         """
@@ -136,10 +143,8 @@ class TridentWSIDataset(WSIDataset):
         Returns:
             coords: Coordinates of the bag.
         """
-        coords_file = os.path.join(self.coords_path, name + '_patches' + self.file_type)
+        coords_file = os.path.join(self.coords_path, name + "_patches" + self.file_type)
         coords = h5py.File(coords_file, "r")["coords"][:]
-        print(coords)
-        print("--")
         if coords is not None:
             coords = coords / self.patch_size
             min_coords = np.min(coords, axis=0)
