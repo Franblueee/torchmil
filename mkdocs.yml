@@ -133,6 +133,7 @@ nav:
       - api/datasets/toy_dataset.md
       - api/datasets/ctscan_dataset.md
       - api/datasets/wsi_dataset.md
+      - api/datasets/trident_wsi_dataset.md
       - api/datasets/binary_classification_dataset.md
       - api/datasets/camelyon16mil_dataset.md
       - api/datasets/pandamil_dataset.md

@@ -2,6 +2,8 @@ import os
 import torch
 import copy
 import numpy as np
+import h5py
+
 
 from tensordict import TensorDict
 from torchmil.utils import build_adj, normalize_adj, add_self_loops
@@ -9,11 +11,11 @@ from torchmil.utils import build_adj, normalize_adj, add_self_loops
 
 class ProcessedMILDataset(torch.utils.data.Dataset):
     r"""
-    This class represents a general MIL dataset where the bags have been processed and saved as numpy files.
+    This class represents a general MIL dataset where the bags have been processed and saved as numpy or .h5 files.
     It enforces strict data availability for core components, failing fast if expected files are missing.
 
     **MIL processing and directory structure.**
-   The dataset expects pre-processed bags saved as individual numpy files.
+   The dataset expects pre-processed bags saved as individual numpy or .h5 files.
    
     - A feature file should yield an array of shape `(bag_size, ...)`, where `...` represents the shape of the features.
     - A label file should yield an array of shape arbitrary shape, e.g., `(1,)` for binary classification.
@@ -26,20 +28,20 @@ class ProcessedMILDataset(torch.utils.data.Dataset):
 
     ```
     features_path/ (if "X" in bag_keys)
-    ├── bag1.npy
-    ├── bag2.npy
+    ├── bag1.ext
+    ├── bag2.ext
     └── ...
     labels_path/ (if "Y" in bag_keys)
-    ├── bag1.npy
-    ├── bag2.npy
+    ├── bag1.ext
+    ├── bag2.ext
     └── ...
     inst_labels_path/ (if "y_inst" in bag_keys)
-    ├── bag1.npy
-    ├── bag2.npy
+    ├── bag1.ext
+    ├── bag2.ext
     └── ...
     coords_path/ (if "coords" or "adj" in bag_keys)
-    ├── bag1.npy
-    ├── bag2.npy
+    ├── bag1.ext
+    ├── bag2.ext
     └── ...
     ```
 
@@ -78,6 +80,7 @@ class ProcessedMILDataset(torch.utils.data.Dataset):
         coords_path: str = None,
         bag_names: list = None,
         bag_keys: list = ["X", "Y", "y_inst", "adj", "coords"],
+        file_type: str = ".npy",
         dist_thr: float = 1.5,
         adj_with_dist: bool = False,
         norm_adj: bool = True,
@@ -98,6 +101,7 @@ class ProcessedMILDataset(torch.utils.data.Dataset):
                 - "y_inst": Load the instance labels of the bag.
                 - "adj": Load the adjacency matrix of the bag. It requires the coordinates to be loaded.
                 - "coords": Load the coordinates of the bag.
+            file_type: File type of files to be loaded. Can be '.npy' or '.h5'.
             bag_names: List of bag names to load. If None, all bags from the `features_path` are loaded.
             dist_thr: Distance threshold for building the adjacency matrix.
             adj_with_dist: If True, the adjacency matrix is built using the Euclidean distance between the instance features. If False, the adjacency matrix is binary.
@@ -112,12 +116,14 @@ class ProcessedMILDataset(torch.utils.data.Dataset):
         self.inst_labels_path = inst_labels_path
         self.coords_path = coords_path
         self.bag_names = bag_names
+        self.file_type = file_type
         self.bag_keys = bag_keys
         self.dist_thr = dist_thr
         self.adj_with_dist = adj_with_dist
         self.norm_adj = norm_adj
         self.load_at_init = load_at_init
         self.verbose = verbose
+        self._set_file_read_fn(self.file_type)
 
         if "X" in self.bag_keys and self.features_path is None:
             raise ValueError("features_path must be provided if 'X' is in bag_keys")
@@ -137,7 +143,9 @@ class ProcessedMILDataset(torch.utils.data.Dataset):
                 raise ValueError("features_path must be provided if bag_names is None")
 
             self.bag_names = [
-                file for file in os.listdir(self.features_path) if file.endswith(".npy")
+                file
+                for file in os.listdir(self.features_path)
+                if file.endswith(self.file_type)
             ]
             self.bag_names = [os.path.splitext(file)[0] for file in self.bag_names]
 
@@ -149,7 +157,19 @@ class ProcessedMILDataset(torch.utils.data.Dataset):
         self.loaded_bags = {}
         if self.load_at_init:
             for name in self.bag_names:
+                print("name")
                 self.loaded_bags[name] = self._build_bag(name)
+
+    def _set_file_read_fn(self, file_type: str) -> None:
+        """ """
+        if file_type == ".npy":
+            self.file_read_fn = lambda x, feature_type: np.load(x)
+        elif file_type == ".h5":
+            self.file_read_fn = lambda x, feature_type: h5py.File(x, "r")[feature_type][
+                :
+            ]
+        else:
+            raise ValueError(f"Unsupported file type: {file_type}")
 
     def _load_features(self, name: str) -> np.ndarray:
         """
@@ -161,8 +181,8 @@ class ProcessedMILDataset(torch.utils.data.Dataset):
         Returns:
             features: Features of the bag.
         """
-        features_file = os.path.join(self.features_path, name + ".npy")
-        features = np.load(features_file)
+        features_file = os.path.join(self.features_path, name + self.file_type)
+        features = self.file_read_fn(features_file, "features")
         return features
 
     def _load_labels(self, name: str) -> np.ndarray:
@@ -175,8 +195,9 @@ class ProcessedMILDataset(torch.utils.data.Dataset):
         Returns:
             label: Label of the bag.
         """
-        label_file = os.path.join(self.labels_path, name + ".npy")
-        label = np.load(label_file)
+        label_file = os.path.join(self.labels_path, name + self.file_type)
+        # label = np.load(label_file)
+        label = self.file_read_fn(label_file, "labels")
         return label
 
     def _load_inst_labels(self, name: str) -> np.ndarray:
@@ -189,7 +210,7 @@ class ProcessedMILDataset(torch.utils.data.Dataset):
         Returns:
             inst_labels: Instance labels of the bag.
         """
-        inst_labels_file = os.path.join(self.inst_labels_path, name + ".npy")
+        inst_labels_file = os.path.join(self.inst_labels_path, name + self.file_type)
         inst_labels = np.load(inst_labels_file)
         return inst_labels
 
@@ -203,8 +224,8 @@ class ProcessedMILDataset(torch.utils.data.Dataset):
         Returns:
             coords: Coordinates of the bag.
         """
-        coords_file = os.path.join(self.coords_path, name + ".npy")
-        coords = np.load(coords_file)
+        coords_file = os.path.join(self.coords_path, name + self.file_type)
+        coords = self.file_read_fn(coords_file, feature_type="coords")
         return coords
 
     def _load_bag(self, name: str) -> dict[str, torch.Tensor]:

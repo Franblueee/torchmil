@@ -28,26 +28,26 @@ class WSIDataset(ProcessedMILDataset):
     See [`torchmil.datasets.BinaryClassificationDataset`](./binary_classification_dataset.md) for more information.
 
     **Directory structure.**
-    It is assumed that the bags have been processed and saved as numpy files.
+    It is assumed that the bags have been processed and saved as numpy or .h5 files.
     For more information on the processing of the bags, refer to the [`ProcessedMILDataset` class](processed_mil_dataset.md).
     This dataset expects the following directory structure:
 
     ```
     features_path
-    ├── wsi1.npy
-    ├── wsi2.npy
+    ├── wsi1.ext
+    ├── wsi2.ext
     └── ...
     labels_path
-    ├── wsi1.npy
-    ├── wsi2.npy
+    ├── wsi1.ext
+    ├── wsi2.ext
     └── ...
     inst_labels_path
-    ├── wsi1.npy
-    ├── wsi2.npy
+    ├── wsi1.ext
+    ├── wsi2.ext
     └── ...
     coords_path
-    ├── wsi1.npy
-    ├── wsi2.npy
+    ├── wsi1.ext
+    ├── wsi2.ext
     └── ...
     ```
 
@@ -77,6 +77,7 @@ class WSIDataset(ProcessedMILDataset):
         coords_path: str = None,
         wsi_names: list = None,
         bag_keys: list = ["X", "Y", "y_inst", "adj", "coords"],
+        file_type: str = ".npy",
         patch_size: int = 512,
         dist_thr: float = None,
         adj_with_dist: bool = False,
@@ -93,6 +94,7 @@ class WSIDataset(ProcessedMILDataset):
             coords_path: Path to the directory containing the coordinates of the patches.
             wsi_names: List of the names of the WSIs to load. If None, all the WSIs in the `features_path` directory are loaded.
             bag_keys: List of keys to use for the bags. Must be in ['X', 'Y', 'y_inst', 'coords'].
+            file_type: File extension of the files containing the bags. Can be '.npy' or '.h5'.
             patch_size: Size of the patches.
             dist_thr: Distance threshold for building the adjacency matrix. If None, it is set to `sqrt(2) * patch_size`.
             adj_with_dist: If True, the adjacency matrix is built using the Euclidean distance between the patches features. If False, the adjacency matrix is binary.
@@ -110,6 +112,7 @@ class WSIDataset(ProcessedMILDataset):
             coords_path=coords_path,
             bag_names=wsi_names,
             bag_keys=bag_keys,
+            file_type=file_type,
             dist_thr=dist_thr,
             adj_with_dist=adj_with_dist,
             norm_adj=norm_adj,

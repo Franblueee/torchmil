@@ -61,6 +61,7 @@ class PANDAMILDataset(BinaryClassificationDataset, WSIDataset):
         adj_with_dist: bool = False,
         norm_adj: bool = True,
         load_at_init: bool = True,
+        verbose: bool = True,
     ) -> None:
         """
         Arguments:
@@ -72,6 +73,7 @@ class PANDAMILDataset(BinaryClassificationDataset, WSIDataset):
             adj_with_dist: If True, the adjacency matrix is built using the Euclidean distance between the patches features. If False, the adjacency matrix is binary.
             norm_adj: If True, normalize the adjacency matrix.
             load_at_init: If True, load the bags at initialization. If False, load the bags on demand.
+            verbose: If True, print warnings about instance label inconsistencies. If False, suppress warnings.
         """
         features_path = f"{root}/patches_{patch_size}/features/features_{features}/"
         labels_path = f"{root}/patches_{patch_size}/labels/"
@@ -97,6 +99,8 @@ class PANDAMILDataset(BinaryClassificationDataset, WSIDataset):
             norm_adj=norm_adj,
             load_at_init=load_at_init,
         )
+
+        self.verbose = verbose
 
     def _load_bag(self, name: str) -> dict[str, np.ndarray]:
         return BinaryClassificationDataset._load_bag(self, name)
