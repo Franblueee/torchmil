@@ -50,35 +50,36 @@ class ShiftedMeanMILDataset(torch.utils.data.Dataset):
     print(f"Bag label: {Y}")
     print(f"Instance labels: {y_inst}")
     ```
-
-    Arguments:
-        N: Number of bags to generate
-        R: Number of contiguous instances with shifted mean in positive bags
-        S_low: Minimum bag size
-        S_high: Maximum bag size
-        K: Number of features to shift in positive instances
-        M: Total number of features
-        p_y1: Probability of generating a positive bag
-        Delta: Shift amount for positive instances
-        mu: Mean of the normal distribution
-        sigma: Standard deviation of the normal distribution
-        seed: Random seed for reproducibility
     """
 
     def __init__(
         self,
-        N,
-        R=3,
-        S_low=15,
-        S_high=45,
-        K=1,
-        M=768,
-        p_y1=0.5,
-        Delta=1.0,
-        mu=0.0,
-        sigma=1.0,
-        seed=42,
+        N: int = 100,
+        R: int = 3,
+        S_low: int = 15,
+        S_high: int = 45,
+        K: int = 1,
+        M: int = 768,
+        p_y1: float = 0.5,
+        Delta: float = 1.0,
+        mu: float = 0.0,
+        sigma: float = 1.0,
+        seed: int = 42,
     ):
+        """
+        Arguments:
+            N: Number of bags to generate
+            R: Number of contiguous instances with shifted mean in positive bags
+            S_low: Minimum bag size
+            S_high: Maximum bag size
+            K: Number of features to shift in positive instances
+            M: Total number of features
+            p_y1: Probability of generating a positive bag
+            Delta: Shift amount for positive instances
+            mu: Mean of the normal distribution
+            sigma: Standard deviation of the normal distribution
+            seed: Random seed for reproducibility
+        """
         super().__init__()
 
         self.N = N

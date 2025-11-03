@@ -8,3 +8,4 @@ Here you can find a collection of examples that demonstrate how to use **torchmi
 - [**WSI classification in torchmil:**](wsi_classification.ipynb) we show how to train an attention-based MIL model with WSI data.
 - [**CT scan classification in torchmil:**](ctscan_classification.ipynb) we show how to train a transformer-based MIL model with CT scan data.
 - [**Integrating torchmil with Graph Neural Networks (GNNs) frameworks:**](gnn_integration.ipynb) we show how to integrate **torchmil** with GNNs frameworks like [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/index.html) and [Deep Graph Library (DGL)](https://www.dgl.ai/).
+- [**Shifted Mean MIL Dataset:**](shifted_mean_dataset.ipynb) we demonstrate how to use the `ShiftedMeanMILDataset` to create a synthetic dataset for experimenting with MIL models.

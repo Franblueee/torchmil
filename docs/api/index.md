@@ -19,6 +19,7 @@
 - [False Frequency Dataset](datasets/false_frequency_dataset.md)
 - [Multi-Concept Standard Dataset](datasets/mc_standard_dataset.md)
 - [Single Concept Standard Dataset](datasets/sc_standard_dataset.md)
+- [Shifted Mean MIL Dataset](datasets/shifted_mean_dataset.md)
 
 ## Modules: [torchmil.nn](nn/index.md)
 - [Introduction](nn/index.md)

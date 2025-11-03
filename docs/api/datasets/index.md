@@ -19,3 +19,4 @@ This list is constantly updated with new datasets and examples, feel free to con
 - [False Frequency Dataset](false_frequency_dataset.md)
 - [Multi-Concept Standard Dataset](mc_standard_dataset.md)
 - [Single Concept Standard Dataset](sc_standard_dataset.md)
+- [Shifted Mean MIL Dataset](shifted_mean_dataset.md)
