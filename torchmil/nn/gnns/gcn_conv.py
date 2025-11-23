@@ -58,11 +58,11 @@ class GCNConv(torch.nn.Module):
     def forward(self, x: torch.Tensor, adj: torch.Tensor) -> torch.Tensor:
         """
         Arguments:
-            x : Node features of shape (batch_size, n_nodes, in_dim).
-            adj : Adjacency matrix of shape (batch_size, n_nodes, n_nodes).
+            x: Node features of shape (batch_size, n_nodes, in_dim).
+            adj: Adjacency matrix of shape (batch_size, n_nodes, n_nodes).
 
         Returns:
-            y : Output tensor of shape (batch_size, n_nodes, out_dim).
+            y: Output tensor of shape (batch_size, n_nodes, out_dim).
         """
 
         y = torch.bmm(adj, x)

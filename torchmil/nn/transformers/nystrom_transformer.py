@@ -36,7 +36,7 @@ class NystromTransformerLayer(Layer):
         """
         Arguments:
             in_dim: Input dimension.
-            out_dim : Output dimension. If None, out_dim = in_dim.
+            out_dim: Output dimension. If None, out_dim = in_dim.
             att_dim: Attention dimension.
             n_heads: Number of heads.
             n_landmarks: Number of landmarks.

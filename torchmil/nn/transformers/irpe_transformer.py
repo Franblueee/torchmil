@@ -51,7 +51,7 @@ class iRPETransformerLayer(Layer):
         Arguments:
             att_dim: Attention dimension.
             in_dim: Input dimension. If None, in_dim = att_dim.
-            out_dim : Output dimension. If None, out_dim = in_dim.
+            out_dim: Output dimension. If None, out_dim = in_dim.
             n_heads: Number of heads.
             use_mlp: Whether to use feedforward layer.
             dropout: Dropout rate.
