@@ -121,6 +121,7 @@ nav:
     - WSI classification: examples/wsi_classification.ipynb
     - CT scan classification: examples/ctscan_classification.ipynb
     - Integrating torchmil with Graph Neural Networks (GNNs) frameworks: examples/gnn_integration.ipynb
+    - Shifted Mean MIL dataset: examples/shifted_mean_dataset.ipynb
   - API reference:
     - api/index.md
     - torchmil.data:
@@ -141,6 +142,7 @@ nav:
       - api/datasets/false_frequency_dataset.md
       - api/datasets/mc_standard_dataset.md
       - api/datasets/sc_standard_dataset.md
+      - api/datasets/shifted_mean_dataset.md
     - torchmil.nn:
       - api/nn/index.md
       - Attention:
@@ -157,6 +159,7 @@ nav:
         - api/nn/gnns/deepgcn.md
         - api/nn/gnns/gcn_conv.md
         - api/nn/gnns/dense_mincut_pool.md
+        - api/nn/gnns/chebconv.md
       - Transformers:
         - api/nn/transformers/index.md
         - api/nn/transformers/base_transformer.md
