@@ -70,7 +70,7 @@ To see the full list of available models, datasets, and modules, check the [API 
 
 ## Contributing to torchmil
 
-We welcome contributions to **torchmil**! There several ways you can contribute:
+We welcome contributions to **torchmil**! There are several ways you can contribute:
 
 - Reporting bugs or issues you encounter while using the library, asking questions, or requesting new features: use the [Github issues](https://github.com/Franblueee/torchmil/issues).
 - Improving the documentation: if you find any part of the documentation unclear or incomplete, feel free to submit a pull request with improvements.

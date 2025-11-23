@@ -38,7 +38,7 @@ license = "Apache-2.0"
 name = "torchmil"
 readme = "README.md"
 requires-python = ">=3.10"
-version = "1.0.0"
+version = "1.0.1"
 
 [project.optional-dependencies]
 dev = [
