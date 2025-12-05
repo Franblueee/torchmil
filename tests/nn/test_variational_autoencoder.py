@@ -1,7 +1,10 @@
 import torch
 import pytest
 
-from torchmil.nn.variational_autoencoder import VariationalAutoEncoder, VariationalAutoEncoderMIL
+from torchmil.nn.variational_autoencoder import (
+    VariationalAutoEncoder,
+    VariationalAutoEncoderMIL,
+)
 
 
 # Fixtures for common setup
@@ -18,18 +21,14 @@ def sample_bag_data():
 @pytest.fixture
 def vae_basic():
     return VariationalAutoEncoder(
-        input_shape=(10,),
-        layer_sizes=[8, 5],
-        activations=["relu", "None"]
+        input_shape=(10,), layer_sizes=[8, 5], activations=["relu", "None"]
     )
 
 
 @pytest.fixture
 def vae_mil():
     return VariationalAutoEncoderMIL(
-        input_shape=(10,),
-        layer_sizes=[8, 5],
-        activations=["relu", "None"]
+        input_shape=(10,), layer_sizes=[8, 5], activations=["relu", "None"]
     )
 
 
@@ -37,9 +36,7 @@ def vae_mil():
 def test_vae_initialization():
     # Test basic initialization
     vae = VariationalAutoEncoder(
-        input_shape=(10,),
-        layer_sizes=[8, 5],
-        activations=["relu", "None"]
+        input_shape=(10,), layer_sizes=[8, 5], activations=["relu", "None"]
     )
     assert vae.input_dim == (10,)
     assert vae.output_size == 10
@@ -49,9 +46,7 @@ def test_vae_initialization():
 def test_vae_initialization_diagonal_covar():
     # Test initialization with diagonal covariance
     vae = VariationalAutoEncoder(
-        input_shape=(10,),
-        layer_sizes=[8, 5],
-        covar_mode="diagonal"
+        input_shape=(10,), layer_sizes=[8, 5], covar_mode="diagonal"
     )
     assert vae.covar_mode == "diagonal"
 
@@ -60,9 +55,7 @@ def test_vae_initialization_invalid_covar():
     # Test that invalid covariance mode raises error
     with pytest.raises(NotImplementedError):
         VariationalAutoEncoder(
-            input_shape=(10,),
-            layer_sizes=[8, 5],
-            covar_mode="invalid"
+            input_shape=(10,), layer_sizes=[8, 5], covar_mode="invalid"
         )
 
 
@@ -87,7 +80,7 @@ def test_vae_complete_forward_samples(sample_data, vae_basic):
 def test_vae_compute_loss(sample_data, vae_basic):
     # Test loss computation
     loss_dict = vae_basic.compute_loss(sample_data, reduction="sum", n_samples=2)
-    
+
     assert "VaeELL" in loss_dict
     assert "VaeKL" in loss_dict
     assert loss_dict["VaeELL"].shape == ()  # scalar
@@ -97,7 +90,7 @@ def test_vae_compute_loss(sample_data, vae_basic):
 def test_vae_get_raw_output_enc(sample_data, vae_basic):
     # Test encoder raw output
     mean, log_std = vae_basic.get_raw_output_enc(sample_data)
-    
+
     assert mean.shape == (4, 5)  # batch_size, latent_dim
     assert log_std.shape == (4, 1)  # batch_size, d_var_enc (single mode)
 
@@ -106,7 +99,7 @@ def test_vae_get_raw_output_dec(vae_basic):
     # Test decoder raw output
     latent_samples = torch.randn(4, 5)  # batch_size, latent_dim
     mean, log_std = vae_basic.get_raw_output_dec(latent_samples)
-    
+
     assert mean.shape == (4, 10)  # batch_size, input_dim
     # In single covar mode, log_std is expanded to match input dim
     assert log_std.shape == (4, 10)  # batch_size, input_dim (expanded from d_var_dec)
@@ -115,10 +108,7 @@ def test_vae_get_raw_output_dec(vae_basic):
 # Basic tests for VariationalAutoEncoderMIL class
 def test_vae_mil_initialization():
     # Test MIL VAE initialization
-    vae_mil = VariationalAutoEncoderMIL(
-        input_shape=(10,),
-        layer_sizes=[8, 5]
-    )
+    vae_mil = VariationalAutoEncoderMIL(input_shape=(10,), layer_sizes=[8, 5])
     assert isinstance(vae_mil, VariationalAutoEncoder)
 
 
@@ -131,7 +121,7 @@ def test_vae_mil_forward(sample_bag_data, vae_mil):
 def test_vae_mil_compute_loss(sample_bag_data, vae_mil):
     # Test MIL VAE loss computation
     loss_dict = vae_mil.compute_loss(sample_bag_data, reduction="mean")
-    
+
     assert "VaeELL" in loss_dict and "VaeKL" in loss_dict
     assert loss_dict["VaeELL"].shape == ()
     assert loss_dict["VaeKL"].shape == ()

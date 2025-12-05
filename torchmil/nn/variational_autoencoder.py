@@ -86,9 +86,7 @@ class VariationalAutoEncoder(torch.nn.Module):
         # Obtain samples
         samples = torch.normal(
             0.0, 1.0, size=(mean.shape[0], mean.shape[-1], n_samples)
-        ).to(
-            mean.device
-        )  # (batch_size, latent_dim, n_samples)
+        ).to(mean.device)  # (batch_size, latent_dim, n_samples)
 
         # Reparameterized samples, add jitter
         log_std = log_std + self.jitter

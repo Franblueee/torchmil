@@ -41,5 +41,7 @@ from .gnns import (
 )
 
 from .mlp import MLP as MLP
-from .variational_autoencoder import (VariationalAutoEncoder as VariationalAutoEncoder,
-                                     VariationalAutoEncoderMIL as VariationalAutoEncoderMIL)
+from .variational_autoencoder import (
+    VariationalAutoEncoder as VariationalAutoEncoder,
+    VariationalAutoEncoderMIL as VariationalAutoEncoderMIL,
+)
