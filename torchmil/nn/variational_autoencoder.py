@@ -100,7 +100,7 @@ class VariationalAutoEncoder(torch.nn.Module):
         return rep_samples
 
     def get_raw_output_enc(self, X: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        """
+        r"""
         Compute the mean and log standard deviation of the posterior distribution $q(\mathbf{z}\mid \mathbf{x})$.
 
         The posterior distribution is parameterized as:
@@ -129,7 +129,7 @@ class VariationalAutoEncoder(torch.nn.Module):
     def get_raw_output_dec(
         self, samples: torch.Tensor
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        """
+        r"""
         Compute the mean and log standard deviation of the likelihood distribution $p(\mathbf{x}|\mathbf{z})$.
 
         The likelihood distribution is parameterized as:
@@ -159,7 +159,7 @@ class VariationalAutoEncoder(torch.nn.Module):
     def forward(
         self, X: torch.Tensor, n_samples: int = 1, return_mean_logstd: bool = False
     ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """
+        r"""
         Forward pass through the VAE encoder.
 
         Note: This method only implements encoding, since the latent variables are used for downstream tasks.
@@ -190,7 +190,7 @@ class VariationalAutoEncoder(torch.nn.Module):
     def get_posterior_samples(
         self, X: torch.Tensor, n_samples: int = 1, return_mean_logstd: bool = False
     ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """
+        r"""
         Generate samples from the posterior distribution $q(\mathbf{z}|\mathbf{x})$.
 
         Arguments:
@@ -229,7 +229,7 @@ class VariationalAutoEncoder(torch.nn.Module):
     def complete_forward_samples(
         self, X: torch.Tensor, n_samples: int = 1
     ) -> torch.Tensor:
-        """
+        r"""
         Compute samples from the likelihood $p(\mathbf{x}|\mathbf{z})$ using a complete forward pass.
 
         This method first encodes the input to obtain latent samples, then decodes
@@ -336,7 +336,7 @@ class VariationalAutoEncoder(torch.nn.Module):
         return {"VaeELL": -ell, "VaeKL": kl}
 
     def _kl_prior(self, mean: torch.Tensor, log_std: torch.Tensor) -> torch.Tensor:
-        """
+        r"""
         Compute KL divergence between posterior $q(\mathbf{z}|\mathbf{x})$ and standard normal prior.
 
         Computes $D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || \mathcal{N}(0, I))$ for a multivariate Gaussian
@@ -559,7 +559,7 @@ class VariationalAutoEncoderMIL(VariationalAutoEncoder):
             samples: Only returned when `return_samples=True`. Latent samples used for loss computation.
         """
 
-        B, N, D = X.shape[0], X.shape[1], X.shape[2:]
+        B, N, _ = X.shape[0], X.shape[1], X.shape[2:]
         mask = mask if mask is not None else torch.ones(B, N)
 
         X = X.view(B * N, *X.shape[2:])
