@@ -39,3 +39,7 @@ from .gnns import (
     ChebConv as ChebConv,
     dense_mincut_pool as dense_mincut_pool,
 )
+
+from .mlp import MLP as MLP
+from .variational_autoencoder import (VariationalAutoEncoder as VariationalAutoEncoder,
+                                     VariationalAutoEncoderMIL as VariationalAutoEncoderMIL)

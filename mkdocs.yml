@@ -168,6 +168,8 @@ nav:
       - api/nn/sm.md
       - api/nn/mean_pool.md
       - api/nn/max_pool.md
+      - api/nn/mlp.md
+      - api/nn/variational_autoencoder.md
     - torchmil.models:
       - api/models/index.md
       - api/models/mil_model.md
@@ -188,6 +190,7 @@ nav:
       - api/models/transmil.md
       - api/models/setmil.md
       - api/models/iibmil.md
+      - api/models/vaeabmil.md
     - torchmil.visualize:
       - api/visualize/index.md
       - api/visualize/vis_ctscan.md

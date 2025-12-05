@@ -45,6 +45,8 @@
 - [Sm operator](nn/sm.md)
 - [Max Pool](nn/max_pool.md)
 - [Mean Pool](nn/mean_pool.md)
+- [Multi Layer Perceptron](nn/mlp.md)
+- [Variational Autoencoder](nn/variational_autoencoder.md)
 
 ## Models: [torchmil.models](models/index.md)
 - [Introduction](models/index.md)
@@ -65,6 +67,7 @@
 - [TransformerProbSmoothABMIL](models/transformer_prob_smooth_abmil.md)
 - [TransMIL](models/transmil.md)
 - [SETMIL](models/setmil.md)
+- [VAEABMIL](models/vaeabmil.md)
 
 ## Visualize: [torchmil.visualize](visualize/index.md)
 - [Introduction](visualize/index.md)
