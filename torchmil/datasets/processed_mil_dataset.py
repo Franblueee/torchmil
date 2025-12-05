@@ -157,7 +157,6 @@ class ProcessedMILDataset(torch.utils.data.Dataset):
         self.loaded_bags = {}
         if self.load_at_init:
             for name in self.bag_names:
-                print("name")
                 self.loaded_bags[name] = self._build_bag(name)
 
     def _set_file_read_fn(self, file_type: str) -> None:

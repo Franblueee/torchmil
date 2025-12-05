@@ -27,3 +27,5 @@ These modules are designed to be flexible and easy to use, allowing you to build
 - [Sm operator](sm.md)
 - [Max Pool](max_pool.md)
 - [Mean Pool](mean_pool.md)
+- [Multi Layer Perceptron](mlp.md)
+- [Variational Autoencoder](variational_autoencoder.md)

@@ -19,3 +19,4 @@ They all inherit from the [General MIL model](mil_model.md) class, which provide
 - [TransMIL](transmil.md)
 - [SETMIL](setmil.md)
 - [IIBMIL](iibmil.md)
+- [VAEABMIL](vaeabmil.md)
