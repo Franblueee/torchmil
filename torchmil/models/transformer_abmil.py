@@ -9,6 +9,7 @@ from torchmil.nn.utils import get_feat_dim
 class TransformerABMIL(MILModel):
     r"""
     Transformer Attention-based Multiple Instance Learning model.
+    Proposed in [Sm: enhanced localization in Multiple Instance Learning for medical imaging classification](https://arxiv.org/abs/2410.03276).
 
     Given an input bag $\mathbf{X} = \left[ \mathbf{x}_1, \ldots, \mathbf{x}_N \right]^\top \in \mathbb{R}^{N \times P}$, the model optionally applies a feature extractor, $\text{FeatExt}(\cdot)$, to transform the instance features: $\mathbf{X} = \text{FeatExt}(\mathbf{X}) \in \mathbb{R}^{N \times D}$.
     Then, it transforms the instance features using a transformer encoder,
