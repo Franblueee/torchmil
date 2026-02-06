@@ -135,9 +135,11 @@ nav:
       - api/datasets/wsi_dataset.md
       - api/datasets/trident_wsi_dataset.md
       - api/datasets/binary_classification_dataset.md
+      - api/datasets/video_classification_dataset.md
       - api/datasets/camelyon16mil_dataset.md
       - api/datasets/pandamil_dataset.md
       - api/datasets/rsnamil_dataset.md
+      - api/datasets/tadmil_dataset.md
       - api/datasets/false_frequency_dataset.md
       - api/datasets/mc_standard_dataset.md
       - api/datasets/sc_standard_dataset.md

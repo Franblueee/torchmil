@@ -15,7 +15,7 @@ class TADMILDataset(BinaryClassificationDataset, VideoClassificationDataset):
     **Dataset description.**
     We have preprocessed the Video by computing features for each frame using various feature extractors.
 
-    - A **video** is labeled as positive (`frame_label=1`) if it contains evidence of traffic anomaly.
+    - A **video** is labeled as positive (`label=1`) if it contains evidence of traffic anomaly.
     - A **video** is labeled as positive (`label=1`) if it contains at least one positive frame.
 
     This means a video is considered positive if there is any evidence of traffic anomaly.
