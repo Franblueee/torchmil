@@ -86,7 +86,9 @@ class VariationalAutoEncoder(torch.nn.Module):
         # Obtain samples
         samples = torch.normal(
             0.0, 1.0, size=(mean.shape[0], mean.shape[-1], n_samples)
-        ).to(mean.device)  # (batch_size, latent_dim, n_samples)
+        ).to(
+            mean.device
+        )  # (batch_size, latent_dim, n_samples)
 
         # Reparameterized samples, add jitter
         log_std = log_std + self.jitter
@@ -268,7 +270,7 @@ class VariationalAutoEncoder(torch.nn.Module):
     def compute_loss(
         self,
         X: torch.Tensor,
-        reduction: str = "sum",
+        reduction: str = "mean",
         n_samples: int = 1,
         return_samples: bool = False,
     ) -> dict | tuple[dict, torch.Tensor]:
