@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from torchmil.datasets import VideoClassificationDataset
+from torchmil.datasets.video_classification_dataset import VideoClassificationDataset
 
 
 @pytest.fixture
