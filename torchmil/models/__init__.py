@@ -26,3 +26,4 @@ from .camil import CAMIL as CAMIL
 from .iibmil import IIBMIL as IIBMIL
 from .setmil import SETMIL as SETMIL
 from .gtp import GTP as GTP
+from .vaeabmil import VAEABMIL as VAEABMIL

@@ -163,35 +163,3 @@ class MCStandardMILDataset(torch.utils.data.Dataset):
                 f"Index {index} out of range (max: {len(self.bags_list) - 1})"
             )
         return self.bags_list[index]
-
-
-if __name__ == "__main__":
-    dataset = MCStandardMILDataset(D=2, num_bags=100, pos_class_prob=0.5)
-    print(f"Number of bags: {len(dataset)}")
-    for i in range(2):
-        bag = dataset[i]
-        print(f"Bag {i}:")
-        print(f"  X: {bag['X']}")
-        print(f"  Y: {bag['Y']}")
-        print(f"  y_inst: {bag['y_inst']}")
-        bag = dataset[-i]
-        print(f"Bag {100-i}:")
-        print(f"  X: {bag['X']}")
-        print(f"  Y: {bag['Y']}")
-        print(f"  y_inst: {bag['y_inst']}")
-
-    print("Testing")
-    dataset_test = MCStandardMILDataset(
-        D=2, num_bags=100, pos_class_prob=0.5, train=False
-    )
-    for i in range(2):
-        bag = dataset_test[i]
-        print(f"Bag {i}:")
-        print(f"  X: {bag['X']}")
-        print(f"  Y: {bag['Y']}")
-        print(f"  y_inst: {bag['y_inst']}")
-        bag = dataset_test[-i]
-        print(f"Bag {100-i}:")
-        print(f"  X: {bag['X']}")
-        print(f"  Y: {bag['Y']}")
-        print(f"  y_inst: {bag['y_inst']}")
