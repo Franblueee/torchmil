@@ -11,7 +11,6 @@ from .tadmil_dataset import TADMILDataset as TADMILDataset
 from .toy_dataset import ToyDataset as ToyDataset
 from .wsi_dataset import WSIDataset as WSIDataset
 from .ctscan_dataset import CTScanDataset as CTScanDataset
-from .video_classification_dataset import VideoClassificationDataset
 
 from .mc_standard_dataset import MCStandardMILDataset as MCStandardMILDataset
 from .sc_standard_dataset import SCStandardMILDataset as SCStandardMILDataset
