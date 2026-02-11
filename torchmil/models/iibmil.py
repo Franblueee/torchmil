@@ -23,6 +23,10 @@ class IIBMIL(torch.nn.Module):
     2. The prototype $\mathbf{p}_{c,t} \in \mathbf{R}^{D}$ of class $c$ at time $t$ is updated using a momentum update rule based on the set of instances with the top $k$ highest probabilities of belonging to class $c$. Writing $\mathbf{P}_t = \left[ \mathbf{p}_{1,t}, \ldots, \mathbf{p}_{C,t}  \right]^\top \in \mathbb{R}^{C \times D}$, the prototype label $z_{i}$ of each instance is obtained as $z_{i} = \text{argmax}_{c} \ \mathbf{P} \mathbf{x}_i$.
     3. Compute instance-level soft labels using the prototype labels and a momentum update.
     4. Compute the instance-level cross-entropy loss using the soft labels and the instance classifier.
+
+    **A Note about Prototype Updates.** This class does not automatically call `update_prototypes` during the loss computation (e.g., inside `compute_loss`). This is a deliberate design choice since updating prototypes at every iteration (per batch) can lead to rapid prototype collapse.
+    Therefore, you must explicitly determine when to update the prototypes by calling the `update_prototypes` method manually within your training loop.
+    Note that torchmil's [Trainer](../utils/trainer.md) does not automatically call `update_prototypes` during training, so you will need to implement a custom training loop if you want to use this functionality.
     """
 
     def __init__(
