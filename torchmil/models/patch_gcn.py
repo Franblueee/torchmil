@@ -42,6 +42,7 @@ class PatchGCN(torch.nn.Module):
         att_dim: int = 128,
         dropout: float = 0.0,
         feat_ext: torch.nn.Module = torch.nn.Identity(),
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ):
         """
@@ -53,9 +54,11 @@ class PatchGCN(torch.nn.Module):
             att_dim: Attention dimension.
             dropout: Dropout rate.
             feat_ext: Feature extractor.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function.
         """
         super(PatchGCN, self).__init__()
+        self.num_outputs = n_outputs
         self.criterion = criterion
         self.feat_ext = feat_ext
 
@@ -90,7 +93,7 @@ class PatchGCN(torch.nn.Module):
             self.mlp.append(torch.nn.Sequential(fc_layer, act_layer, dropout_layer))
 
         self.pool = AttentionPool(in_dim=hidden_dim, att_dim=att_dim)
-        self.classifier = LazyLinear(hidden_dim, 1)
+        self.classifier = LazyLinear(hidden_dim, n_outputs)
 
     def forward(
         self,

@@ -130,7 +130,7 @@ class DTFDMIL(MILModel):
                 X_chunk, mask_chunk
             )  # (batch_size, feat_dim), [batch_size, chunk_size)
 
-            pseudo_pred = self.classifier(z)  # (batch_size, 1)
+            pseudo_pred = self.classifier(z)  # (batch_size, n_outputs)
             pseudo_pred_list.append(pseudo_pred)
 
             inst_cam = self._cam_1d(
@@ -184,7 +184,8 @@ class DTFDMIL(MILModel):
 
             pseudo_feat_list.append(pseudo_feat)
 
-        pseudo_pred = torch.cat(pseudo_pred_list, dim=1)  # (batch_size, n_groups]
+        # Concatenate pseudo predictions from all groups
+        pseudo_pred = torch.cat(pseudo_pred_list, dim=1)  # (batch_size, n_groups)
         pseudo_feat = torch.cat(
             pseudo_feat_list, dim=1
         )  # (batch_size, n_groups, k, feat_dim); k = 2*chunk_size or chunk_size or 1
@@ -193,8 +194,8 @@ class DTFDMIL(MILModel):
         )  # (batch_size, n_groups*k, feat_dim)
 
         pseudo_z = self.u_attention_pool(pseudo_feat)  # (batch_size, feat_dim)
-        Y_pred = self.u_classifier(pseudo_z)  # (batch_size, 1]
-        Y_pred = Y_pred.squeeze(-1)  # (batch_size,]
+        Y_pred = self.u_classifier(pseudo_z)  # (batch_size, 1)
+        Y_pred = Y_pred.squeeze(-1)  # (batch_size,)
 
         if return_inst_cam:
             inst_cam = torch.cat(inst_cam_list, dim=1)  # (batch_size, bag_size)

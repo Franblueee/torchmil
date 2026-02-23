@@ -41,6 +41,7 @@ class TransformerABMIL(MILModel):
         transf_use_mlp: bool = True,
         transf_add_self: bool = True,
         transf_dropout: float = 0.0,
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -58,9 +59,11 @@ class TransformerABMIL(MILModel):
             transf_use_mlp: Whether to use MLP in transformer encoder.
             transf_add_self: Whether to add input to output in transformer encoder.
             transf_dropout: Dropout rate in transformer encoder.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits for binary classification.
         """
         super().__init__()
+        self.num_outputs = n_outputs
         self.criterion = criterion
 
         self.feat_ext = feat_ext
@@ -77,7 +80,7 @@ class TransformerABMIL(MILModel):
         self.pool = AttentionPool(
             in_dim=feat_dim, att_dim=pool_att_dim, act=pool_act, gated=pool_gated
         )
-        self.last_layer = torch.nn.Linear(feat_dim, 1)
+        self.last_layer = torch.nn.Linear(feat_dim, n_outputs)
 
     def forward(
         self, X: torch.Tensor, mask: torch.Tensor = None, return_att: bool = False

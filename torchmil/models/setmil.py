@@ -209,6 +209,7 @@ class SETMIL(MILModel):
         rpe_skip: int = 1,
         rpe_on: str = "k",
         feat_ext: torch.nn.Module = torch.nn.Identity(),
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -234,9 +235,11 @@ class SETMIL(MILModel):
             rpe_skip: Number of tokens to skip in the relative positional encoding. Possible values: [0, 1].
             rpe_on: Where to apply relative positional encoding. Possible values: ['q', 'k', 'v', 'qk', 'kv', 'qkv'].
             feat_ext: Feature extractor.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits.
         """
         super().__init__()
+        self.num_outputs = n_outputs
         self.criterion = criterion
 
         self.feat_ext = feat_ext
@@ -282,7 +285,7 @@ class SETMIL(MILModel):
 
         self.cls_token = torch.nn.Parameter(torch.randn(1, 1, att_dim))
 
-        self.classifier = torch.nn.Linear(in_features=att_dim, out_features=1)
+        self.classifier = torch.nn.Linear(in_features=att_dim, out_features=n_outputs)
 
     def _pad_to_square(self, X: torch.Tensor) -> torch.Tensor:
         """

@@ -35,6 +35,7 @@ class IIBMIL(torch.nn.Module):
         use_mlp_decoder: bool = False,
         n_heads: int = 4,
         feat_ext: torch.nn.Module = torch.nn.Identity(),
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -47,9 +48,11 @@ class IIBMIL(torch.nn.Module):
             use_mlp_decoder: If True, uses a multi-layer perceptron (MLP) in the decoder.
             n_heads: Number of attention heads.
             feat_ext: Feature extractor.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits.
         """
         super().__init__()
+        self.num_outputs = n_outputs
         self.criterion = criterion
         self.feat_ext = feat_ext
 
@@ -93,7 +96,7 @@ class IIBMIL(torch.nn.Module):
         # self.inst_classifier = torch.nn.Linear(att_dim, 1)
         self.inst_classifier = torch.nn.Linear(att_dim, 1)
         # self.bag_classifier = torch.nn.Linear(n_queries * att_dim, 1)
-        self.bag_classifier = torch.nn.Linear(att_dim, 1)
+        self.bag_classifier = torch.nn.Linear(att_dim, n_outputs)
 
     def _inst_loss(
         self,

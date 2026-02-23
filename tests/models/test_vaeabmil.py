@@ -80,3 +80,27 @@ def test_vaeabmil_predict(sample_data, vaeabmil_model):
     Y_pred, y_inst_pred = vaeabmil_model.predict(X, mask, return_inst_pred=True)
     assert Y_pred.shape == (2,)
     assert y_inst_pred.shape == (2, 3)
+
+
+def test_vaeabmil_multiclass_support(vae_feat_ext):
+    """Test multiclass support for VAEABMIL model."""
+    X = torch.randn(2, 3, 10)  # batch_size, bag_size, feat_dim
+    mask = torch.ones(2, 3).bool()
+
+    # Binary classification (n_outputs=1)
+    model_binary = VAEABMIL(feat_ext=vae_feat_ext, in_shape=(3, 10), n_outputs=1)
+    assert model_binary.num_outputs == 1
+    Y_pred = model_binary(X, mask)
+    assert Y_pred.shape == (2,)
+
+    # 3-class classification (n_outputs=3)
+    model_3class = VAEABMIL(feat_ext=vae_feat_ext, in_shape=(3, 10), n_outputs=3)
+    assert model_3class.num_outputs == 3
+    Y_pred = model_3class(X, mask)
+    assert Y_pred.shape == (2, 3)
+
+    # 5-class classification (n_outputs=5)
+    model_5class = VAEABMIL(feat_ext=vae_feat_ext, in_shape=(3, 10), n_outputs=5)
+    assert model_5class.num_outputs == 5
+    Y_pred = model_5class(X, mask)
+    assert Y_pred.shape == (2, 5)

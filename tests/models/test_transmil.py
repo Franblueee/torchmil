@@ -207,3 +207,29 @@ class TestTransMIL:
         Y_pred, att = model.predict(X, return_inst_pred=True)
         assert Y_pred.shape == (batch_size,)
         assert att.shape == (batch_size, bag_size)
+
+    def test_transmil_multiclass_support(self):
+        """Test multiclass support for TransMIL model."""
+        batch_size = 2
+        bag_size = 10
+        in_dim = 10
+        in_shape = (in_dim,)
+
+        # Binary classification (n_outputs=1)
+        model_binary = TransMIL(in_shape=in_shape, n_outputs=1)
+        assert model_binary.num_outputs == 1
+        X = torch.randn(batch_size, bag_size, in_dim)
+        Y_pred = model_binary(X)
+        assert Y_pred.shape == (batch_size,)
+
+        # 3-class classification (n_outputs=3)
+        model_3class = TransMIL(in_shape=in_shape, n_outputs=3)
+        assert model_3class.num_outputs == 3
+        Y_pred = model_3class(X)
+        assert Y_pred.shape == (batch_size, 3)
+
+        # 5-class classification (n_outputs=5)
+        model_5class = TransMIL(in_shape=in_shape, n_outputs=5)
+        assert model_5class.num_outputs == 5
+        Y_pred = model_5class(X)
+        assert Y_pred.shape == (batch_size, 5)

@@ -50,6 +50,7 @@ class DSMIL(MILModel):
         nonlinear_v: bool = False,
         dropout: float = 0.0,
         feat_ext: torch.nn.Module = torch.nn.Identity(),
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -60,9 +61,11 @@ class DSMIL(MILModel):
             nonlinear_v: If True, apply nonlinearity to the value.
             dropout: Dropout rate.
             feat_ext: Feature extractor.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits.
         """
         super(DSMIL, self).__init__()
+        self.num_outputs = n_outputs
         self.criterion = criterion
         self.feat_ext = feat_ext
 
@@ -86,7 +89,7 @@ class DSMIL(MILModel):
             self.v_nn = nn.Identity()
 
         self.inst_classifier = nn.Linear(feat_dim, 1)
-        self.bag_classifier = nn.Linear(feat_dim, 1)
+        self.bag_classifier = nn.Linear(feat_dim, n_outputs)
 
     def forward(
         self,
@@ -144,10 +147,12 @@ class DSMIL(MILModel):
         # compute bag representation
         z = torch.bmm(A.transpose(1, 2), V)  # (batch_size, 1, feat_dim)
 
-        Y_pred = self.bag_classifier(z)  # (batch_size, 1, 1)
-        Y_pred = Y_pred.squeeze(-1)  # (batch_size, 1)
+        Y_pred = self.bag_classifier(z)  # (batch_size, 1, n_outputs)
+        if self.num_outputs == 1:
+            Y_pred = Y_pred.squeeze()  # (batch_size,)
+        else:
+            Y_pred = Y_pred.squeeze(1)  # (batch_size, n_outputs)
 
-        Y_pred = Y_pred.squeeze(-1)  # (batch_size,)
         y_logits = y_logits.squeeze(-1)  # (batch_size, bag_size)
 
         if return_att:

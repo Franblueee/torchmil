@@ -79,3 +79,47 @@ def test_setmil(sample_setmil_data):
         X.shape[0],
         X.shape[1],
     ), "Instance prediction shape should be (batch_size, bag_size)"
+
+
+def test_setmil_multiclass_support(sample_setmil_data):
+    """Test multiclass support for SETMIL model."""
+    X, coords, Y, in_shape, feat_dim = sample_setmil_data
+    att_dim = 512
+    set_n_layers = 2
+    set_n_heads = 4
+
+    # Binary classification (n_outputs=1)
+    model_binary = SETMIL(
+        in_shape=in_shape,
+        att_dim=att_dim,
+        set_n_layers=set_n_layers,
+        set_n_heads=set_n_heads,
+        n_outputs=1,
+    )
+    assert model_binary.num_outputs == 1
+    Y_pred = model_binary(X, coords)
+    assert Y_pred.shape == (X.shape[0],)
+
+    # 3-class classification (n_outputs=3)
+    model_3class = SETMIL(
+        in_shape=in_shape,
+        att_dim=att_dim,
+        set_n_layers=set_n_layers,
+        set_n_heads=set_n_heads,
+        n_outputs=3,
+    )
+    assert model_3class.num_outputs == 3
+    Y_pred = model_3class(X, coords)
+    assert Y_pred.shape == (X.shape[0], 3)
+
+    # 5-class classification (n_outputs=5)
+    model_5class = SETMIL(
+        in_shape=in_shape,
+        att_dim=att_dim,
+        set_n_layers=set_n_layers,
+        set_n_heads=set_n_heads,
+        n_outputs=5,
+    )
+    assert model_5class.num_outputs == 5
+    Y_pred = model_5class(X, coords)
+    assert Y_pred.shape == (X.shape[0], 5)

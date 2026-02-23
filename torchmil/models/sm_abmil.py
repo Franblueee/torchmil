@@ -38,6 +38,7 @@ class SmABMIL(MILModel):
         sm_where: str = "early",
         spectral_norm: bool = False,
         feat_ext: torch.nn.Module = torch.nn.Identity(),
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -51,9 +52,11 @@ class SmABMIL(MILModel):
             sm_where (str): Where to apply the Sm operator. Possible values: 'early', 'mid', 'late'.
             spectral_norm (bool): If True, apply spectral normalization to all linear layers.
             feat_ext (torch.nn.Module): Feature extractor.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion (torch.nn.Module): Loss function. By default, Binary Cross-Entropy loss from logits for binary classification.
         """
         super().__init__()
+        self.num_outputs = n_outputs
 
         self.feat_ext = feat_ext
         feat_dim = get_feat_dim(feat_ext, in_shape)
@@ -68,7 +71,7 @@ class SmABMIL(MILModel):
             sm_where=sm_where,
             spectral_norm=spectral_norm,
         )
-        self.last_layer = torch.nn.Linear(feat_dim, 1)
+        self.last_layer = torch.nn.Linear(feat_dim, n_outputs)
 
         self.criterion = criterion
 

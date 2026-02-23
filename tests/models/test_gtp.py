@@ -99,3 +99,24 @@ def test_different_number_of_clusters(sample_input, sample_adj, sample_mask):
     model = GTP(in_shape=(10, 5), n_clusters=50)
     Y_pred = model(sample_input, sample_adj, sample_mask)
     assert Y_pred.shape == (2,)
+
+
+def test_gtp_multiclass_support(sample_input, sample_adj, sample_mask):
+    # Tests multiclass support with different numbers of outputs
+    # Test binary classification (default)
+    model_binary = GTP(in_shape=(10, 5), n_outputs=1)
+    assert model_binary.num_outputs == 1
+    Y_pred = model_binary(sample_input, sample_adj, sample_mask)
+    assert Y_pred.shape == (2,)
+
+    # Test multiclass with 3 classes
+    model_3class = GTP(in_shape=(10, 5), n_outputs=3)
+    assert model_3class.num_outputs == 3
+    Y_pred = model_3class(sample_input, sample_adj, sample_mask)
+    assert Y_pred.shape == (2, 3)
+
+    # Test multiclass with 5 classes
+    model_5class = GTP(in_shape=(10, 5), n_outputs=5)
+    assert model_5class.num_outputs == 5
+    Y_pred = model_5class(sample_input, sample_adj, sample_mask)
+    assert Y_pred.shape == (2, 5)

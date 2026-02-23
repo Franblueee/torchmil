@@ -74,6 +74,7 @@ class TransMIL(MILModel):
         dropout: float = 0.0,
         use_mlp: bool = False,
         feat_ext: torch.nn.Module = torch.nn.Identity(),
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ):
         r"""
@@ -87,6 +88,7 @@ class TransMIL(MILModel):
             dropout: Dropout rate in the Nyströmformer layer.
             use_mlp: Whether to use a MLP after the Nyströmformer layer.
             feat_ext: Feature extractor. By default, the identity function (no feature extraction).
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits.
         """
 
@@ -97,6 +99,7 @@ class TransMIL(MILModel):
         if n_landmarks is None:
             n_landmarks = att_dim // 2
         self.n_landmarks = n_landmarks
+        self.num_outputs = n_outputs
 
         self.feat_ext = feat_ext
 
@@ -128,7 +131,7 @@ class TransMIL(MILModel):
         )
 
         self.norm = torch.nn.LayerNorm(att_dim)
-        self.classifier = torch.nn.Linear(att_dim, 1)
+        self.classifier = torch.nn.Linear(att_dim, n_outputs)
 
         self.criterion = criterion
 

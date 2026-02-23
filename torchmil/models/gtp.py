@@ -55,6 +55,7 @@ class GTP(MILModel):
         use_mlp: bool = True,
         dropout: float = 0.0,
         feat_ext: torch.nn.Module = torch.nn.Identity(),
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -69,9 +70,11 @@ class GTP(MILModel):
             use_mlp: Whether to use MLP in transformer encoder.
             dropout: Dropout rate in transformer encoder.
             feat_ext: Feature extractor.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits for binary classification.
         """
         super().__init__()
+        self.num_outputs = n_outputs
         self.criterion = criterion
 
         self.feat_ext = feat_ext
@@ -99,7 +102,7 @@ class GTP(MILModel):
             use_mlp=use_mlp,
             dropout=dropout,
         )
-        self.classifier = Linear(feat_dim, 1)
+        self.classifier = Linear(feat_dim, n_outputs)
         self.index_select = IndexSelect()
 
     def forward(
@@ -142,10 +145,10 @@ class GTP(MILModel):
             X, dim=1, indices=torch.tensor(0, device=X.device)
         )  # (batch_size, 1, feat_dim)
 
-        Y_pred = self.classifier(z)  # (batch_size, 1, 1)
+        Y_pred_raw = self.classifier(z)  # (batch_size, 1, n_outputs)
 
         if return_cam:
-            R = self.classifier.relprop(Y_pred)  # (batch_size, feat_dim)
+            R = self.classifier.relprop(Y_pred_raw)  # (batch_size, feat_dim)
             R = self.index_select.relprop(R)  # (batch_size, n_clusters+1, feat_dim)
             _, att_rel_list = self.transformer_encoder.relprop(
                 R, return_att_relevance=True
@@ -156,7 +159,11 @@ class GTP(MILModel):
             cam = cam[:, 0, 1:].unsqueeze(-1)  # (batch_size, n_clusters, 1)
             cam = torch.bmm(S, cam).squeeze(-1)  # (batch_size, bag_size)
 
-        Y_pred = Y_pred.squeeze(-1).squeeze(-1)  # (batch_size,)
+        # Squeeze Y_pred after relprop to avoid shape mismatch
+        if self.num_outputs == 1:
+            Y_pred = Y_pred_raw.squeeze()  # (batch_size,)
+        else:
+            Y_pred = Y_pred_raw.squeeze(1)  # (batch_size, n_outputs)
 
         if return_loss:
             loss_dict = {"MinCutLoss": mc_loss, "OrthoLoss": o_loss}

@@ -67,6 +67,7 @@ class TransformerProbSmoothABMIL(MILModel):
         transf_use_mlp: bool = True,
         transf_add_self: bool = True,
         transf_dropout: float = 0.0,
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -83,10 +84,12 @@ class TransformerProbSmoothABMIL(MILModel):
             transf_use_mlp: Whether to use MLP in transformer encoder.
             transf_add_self: Whether to add input to output in transformer encoder.
             transf_dropout: Dropout rate in transformer encoder.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits for binary classification.
 
         """
         super().__init__()
+        self.num_outputs = n_outputs
         self.criterion = criterion
 
         self.feat_ext = feat_ext
@@ -112,7 +115,7 @@ class TransformerProbSmoothABMIL(MILModel):
             n_samples_train=n_samples_train,
             n_samples_test=n_samples_test,
         )
-        self.classifier = LazyLinear(feat_dim, 1)
+        self.classifier = LazyLinear(feat_dim, n_outputs)
 
     def forward(
         self,
@@ -160,11 +163,12 @@ class TransformerProbSmoothABMIL(MILModel):
                 z = out_pool
 
         z = z.transpose(1, 2)  # (batch_size, n_samples, feat_dim)
-        Y_pred = self.classifier(z)  # (batch_size, n_samples, 1)
-        Y_pred = Y_pred.squeeze(-1)  # (batch_size, n_samples)
+        Y_pred = self.classifier(z)  # (batch_size, n_samples, n_outputs)
+        if self.num_outputs == 1:
+            Y_pred = Y_pred.squeeze(-1)  # (batch_size, n_samples)
 
         if not return_samples:
-            Y_pred = Y_pred.mean(dim=-1)  # (batch_size,)
+            Y_pred = Y_pred.mean(dim=1)  # (batch_size,) or (batch_size, n_outputs)
             if return_att:
                 f = f.mean(dim=-1)  # (batch_size, bag_size)
 

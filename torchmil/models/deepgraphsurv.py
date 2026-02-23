@@ -44,6 +44,7 @@ class DeepGraphSurv(torch.nn.Module):
         K: int = 5,
         compute_lambda_max: bool = False,
         feat_ext: torch.nn.Module = torch.nn.Identity(),
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ):
         """
@@ -57,9 +58,11 @@ class DeepGraphSurv(torch.nn.Module):
             K: Order of the Chebyshev polynomial approximation for the ChebConv layers.
             compute_lambda_max: If True, computes the maximum eigenvalue of the adjacency matrix for normalization. If False, it will be set to 2.0.
             feat_ext: Feature extractor.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function.
         """
         super(DeepGraphSurv, self).__init__()
+        self.num_outputs = n_outputs
         self.criterion = criterion
         self.feat_ext = feat_ext
         self.dropout_prob = dropout
@@ -94,7 +97,7 @@ class DeepGraphSurv(torch.nn.Module):
 
         self.proj1d = LazyLinear(att_dim, 1)
 
-        self.classifier = LazyLinear(hidden_dim, 1)
+        self.classifier = LazyLinear(hidden_dim, n_outputs)
 
     def forward(
         self,

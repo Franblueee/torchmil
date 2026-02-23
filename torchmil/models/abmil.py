@@ -29,6 +29,7 @@ class ABMIL(MILModel):
         att_act: str = "tanh",
         gated: bool = False,
         feat_ext: torch.nn.Module = torch.nn.Identity(),
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -38,9 +39,11 @@ class ABMIL(MILModel):
             att_act: Activation function for attention. Possible values: 'tanh', 'relu', 'gelu'.
             gated: If True, use gated attention in the attention pooling.
             feat_ext: Feature extractor.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits.
         """
         super().__init__()
+        self.num_outputs = n_outputs
         self.criterion = criterion
 
         self.feat_ext = feat_ext
@@ -52,7 +55,7 @@ class ABMIL(MILModel):
             in_dim=feat_dim, att_dim=att_dim, act=att_act, gated=gated
         )
 
-        self.classifier = LazyLinear(in_features=feat_dim, out_features=1)
+        self.classifier = LazyLinear(in_features=feat_dim, out_features=n_outputs)
 
     def forward(
         self, X: torch.Tensor, mask: torch.Tensor = None, return_att: bool = False
@@ -106,6 +109,7 @@ class ABMIL(MILModel):
         Y_pred = self.forward(X, mask, return_att=False)
 
         crit_loss = self.criterion(Y_pred.float(), Y.float())
+        # crit_loss = self.criterion(Y_pred, Y)
         crit_name = self.criterion.__class__.__name__
 
         return Y_pred, {crit_name: crit_loss}

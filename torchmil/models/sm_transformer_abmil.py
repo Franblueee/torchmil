@@ -53,6 +53,7 @@ class SmTransformerABMIL(MILModel):
         transf_sm_alpha: float = "trainable",
         transf_sm_mode: str = "approx",
         transf_sm_steps: int = 10,
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -77,9 +78,11 @@ class SmTransformerABMIL(MILModel):
             transf_sm_alpha: Alpha value for the Sm operator in transformer encoder.
             transf_sm_mode: Mode for the Sm operator in transformer encoder.
             transf_sm_steps: Number of steps for the Sm operator in transformer encoder.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits for binary classification.
         """
         super().__init__()
+        self.num_outputs = n_outputs
         self.criterion = criterion
 
         self.feat_ext = feat_ext
@@ -106,7 +109,7 @@ class SmTransformerABMIL(MILModel):
             sm_where=pool_sm_where,
             spectral_norm=pool_spectral_norm,
         )
-        self.last_layer = torch.nn.Linear(feat_dim, 1)
+        self.last_layer = torch.nn.Linear(feat_dim, n_outputs)
 
     def forward(
         self,

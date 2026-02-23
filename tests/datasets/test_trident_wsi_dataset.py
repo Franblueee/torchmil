@@ -133,10 +133,9 @@ def test_load_labels_csv_not_found(
 ):
     mock_isdir.return_value = False
 
-    # Mock DF to raise ValueError when accessing specific data
-    mock_df = MagicMock()
-    mock_df.loc.__getitem__.side_effect = ValueError("Forced error")
-    mock_read_csv.return_value = mock_df
+    # Mock DF that does not contain the requested slide
+    df = pd.DataFrame({"name": ["slide_1"], "label": [0]})
+    mock_read_csv.return_value = df
 
     kwargs = base_kwargs.copy()
     kwargs["wsi_name_col"] = "name"
@@ -145,7 +144,7 @@ def test_load_labels_csv_not_found(
     ds = TridentWSIDataset(**kwargs)
     ds.labels_path = kwargs["labels_path"]  # Manually set attribute
 
-    with pytest.raises(ValueError, match="Could not read the label"):
+    with pytest.raises(ValueError, match="Label for 'slide_X' not found"):
         ds._load_labels("slide_X")
 
 

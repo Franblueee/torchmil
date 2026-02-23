@@ -91,3 +91,25 @@ class TestTransformerProbSmoothABMIL:
             X.shape[1],
             model.pool.n_samples_test,
         )
+
+    def test_multiclass_support(self):
+        """Test multiclass support for TransformerProbSmoothABMIL model."""
+        X, _, adj, mask = create_dummy_data()
+
+        # Binary classification (n_outputs=1)
+        model_binary = TransformerProbSmoothABMIL(in_shape=(5,), n_outputs=1)
+        assert model_binary.num_outputs == 1
+        Y_pred = model_binary(X, adj)
+        assert Y_pred.shape == (X.shape[0],)
+
+        # 3-class classification (n_outputs=3)
+        model_3class = TransformerProbSmoothABMIL(in_shape=(5,), n_outputs=3)
+        assert model_3class.num_outputs == 3
+        Y_pred = model_3class(X, adj)
+        assert Y_pred.shape == (X.shape[0], 3)
+
+        # 5-class classification (n_outputs=5)
+        model_5class = TransformerProbSmoothABMIL(in_shape=(5,), n_outputs=5)
+        assert model_5class.num_outputs == 5
+        Y_pred = model_5class(X, adj)
+        assert Y_pred.shape == (X.shape[0], 5)

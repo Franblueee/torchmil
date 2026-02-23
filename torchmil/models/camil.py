@@ -168,6 +168,7 @@ class CAMIL(MILModel):
         dropout: float = 0.0,
         use_mlp: bool = False,
         feat_ext: torch.nn.Module = torch.nn.Identity(),
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -182,9 +183,11 @@ class CAMIL(MILModel):
             dropout: Dropout rate of the Nystrom Transformer Layer.
             use_mlp: If True, use MLP in the Nystrom Transformer layer.
             feat_ext: Feature extractor.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits.
         """
         super(CAMIL, self).__init__()
+        self.num_outputs = n_outputs
         self.feat_ext = feat_ext
         self.criterion = criterion
 
@@ -212,7 +215,7 @@ class CAMIL(MILModel):
             in_dim=nystrom_att_dim, att_dim=pool_att_dim, gated=gated_pool
         )
 
-        self.classifier = nn.Linear(nystrom_att_dim, 1)
+        self.classifier = nn.Linear(nystrom_att_dim, n_outputs)
 
         self.criterion = criterion
 
@@ -255,7 +258,9 @@ class CAMIL(MILModel):
         else:
             z = self.camil_att_pool(T, M, mask)  # (batch_size, feat_dim)
 
-        Y_pred = self.classifier(z).squeeze(dim=-1)  # (batch_size,)
+        Y_pred = self.classifier(z)  # (batch_size, n_outputs)
+        if self.num_outputs == 1:
+            Y_pred = Y_pred.squeeze(dim=-1)  # (batch_size,)
 
         if return_att:
             return Y_pred, att

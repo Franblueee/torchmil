@@ -101,37 +101,43 @@ class TridentWSIDataset(WSIDataset):
 
     def _load_labels(self, name: str) -> np.ndarray:
         """
-        Load the labels of a bag from disk. This function adds the functionality of reading the bag labels from a CSV, checking if the provided path is a directory or a file.
-        To achieve this, it is assumed that the
+        Load the labels of a bag from disk or a CSV cache.
 
         Arguments:
             name: Name of the bag to load.
 
         Returns:
-            labels: Labels of the bag.
-        """
+            label: Labels of the bag as a numpy array.
 
+        Raises:
+            ValueError: If the name is not found in the CSV or config is missing.
+            KeyError: If the CSV columns are incorrect.
+        """
+        # Case 1: Directory mode
         if os.path.isdir(self.labels_path):
             return super()._load_labels(name)
-        else:
-            if not hasattr(self, "labels_csv"):
-                self.labels_csv = pd.read_csv(os.path.join(self.labels_path))
-            if "wsi_name_col" in self.kwargs and "wsi_label_col" in self.kwargs:
-                wsi_name_col = self.kwargs["wsi_name_col"]
-                wsi_label_col = self.kwargs["wsi_label_col"]
-                try:
-                    labels = self.labels_csv.loc[
-                        self.labels_csv[wsi_name_col] == name, wsi_label_col
-                    ].values
-                except ValueError:
-                    raise ValueError(
-                        f"Could not read the label of the file {name} from the CSV file {self.labels_path}. Please check that the column names provided in 'wsi_name_col' and 'wsi_label_col' are correct."
-                    )
-            else:
-                raise ValueError(
-                    "When providing a CSV file for labels_path, you must provide 'wsi_name_col' and 'wsi_label_col' in the kwargs."
-                )
-            return labels
+
+        # Initialize cache if it doesn't exist
+        if not hasattr(self, "labels_df"):
+            self.labels_df = pd.read_csv(self.labels_path)
+
+        # Extract config explicitly for readability
+        wsi_name_col = self.kwargs.get("wsi_name_col")
+        wsi_label_col = self.kwargs.get("wsi_label_col")
+
+        if not wsi_name_col or not wsi_label_col:
+            raise ValueError(
+                "To load labels from a CSV, you must provide 'wsi_name_col' "
+                "and 'wsi_label_col' in kwargs."
+            )
+
+        # Attempt to retrieve the label
+        subset = self.labels_df.loc[self.labels_df[wsi_name_col] == name, wsi_label_col]
+
+        if subset.empty:
+            raise ValueError(f"Label for '{name}' not found in {self.labels_path}")
+
+        return subset.values
 
     def _load_coords(self, name: str) -> np.ndarray:
         """

@@ -106,3 +106,25 @@ class TestSmoothABMIL:
         assert isinstance(loss_dict["DirEnergy"], torch.Tensor)
         # Ensure KLDiv was renamed to DirEnergy
         assert "KLDiv" not in loss_dict
+
+    def test_prob_smooth_abmil_multiclass_support(self):
+        """Test multiclass support for ProbSmoothABMIL model."""
+        X, Y, adj, mask = create_dummy_data()
+
+        # Binary classification (n_outputs=1)
+        model_binary = ProbSmoothABMIL(in_shape=(X.shape[-1],), n_outputs=1)
+        assert model_binary.num_outputs == 1
+        Y_pred = model_binary(X, adj)
+        assert Y_pred.shape == (X.shape[0],)
+
+        # 3-class classification (n_outputs=3)
+        model_3class = ProbSmoothABMIL(in_shape=(X.shape[-1],), n_outputs=3)
+        assert model_3class.num_outputs == 3
+        Y_pred = model_3class(X, adj)
+        assert Y_pred.shape == (X.shape[0], 3)
+
+        # 5-class classification (n_outputs=5)
+        model_5class = ProbSmoothABMIL(in_shape=(X.shape[-1],), n_outputs=5)
+        assert model_5class.num_outputs == 5
+        Y_pred = model_5class(X, adj)
+        assert Y_pred.shape == (X.shape[0], 5)

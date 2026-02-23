@@ -32,6 +32,7 @@ class VAEABMIL(MILModel):
         att_dim: int = 128,
         att_act: str = "tanh",
         gated: bool = False,
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
         vae_loss_reduction: str = "mean",
     ) -> None:
@@ -42,10 +43,12 @@ class VAEABMIL(MILModel):
             att_dim: Attention dimension.
             att_act: Activation function for attention. Possible values: 'tanh', 'relu', 'gelu'.
             gated: If True, use gated attention in the attention pooling.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits.
             vae_loss_reduction: Reduction method for VAE loss. Possible values: 'sum', 'mean', 'none'.
         """
         super().__init__()
+        self.num_outputs = n_outputs
         self.criterion = criterion
         self.vae_loss_reduction = vae_loss_reduction
 
@@ -59,7 +62,7 @@ class VAEABMIL(MILModel):
             in_dim=feat_dim, att_dim=att_dim, act=att_act, gated=gated
         )
 
-        self.classifier = LazyLinear(in_features=feat_dim, out_features=1)
+        self.classifier = LazyLinear(in_features=feat_dim, out_features=n_outputs)
 
     def forward(
         self,

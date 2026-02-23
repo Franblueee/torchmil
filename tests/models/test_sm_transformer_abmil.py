@@ -149,3 +149,26 @@ def test_sm_transformer_abmil_predict(sample_inputs_sm_transformer):
     assert Y_pred.shape == (batch_size,)
     assert isinstance(y_inst_pred, torch.Tensor)
     assert y_inst_pred.shape == (batch_size, bag_size)
+
+
+def test_sm_transformer_abmil_multiclass_support(sample_inputs_sm_transformer):
+    """Test multiclass support for SmTransformerABMIL model."""
+    X, adj, mask, _, in_shape, batch_size, _, _ = sample_inputs_sm_transformer
+
+    # Binary classification (n_outputs=1)
+    model_binary = SmTransformerABMIL(in_shape=in_shape, n_outputs=1)
+    assert model_binary.num_outputs == 1
+    Y_pred = model_binary(X, adj, mask)
+    assert Y_pred.shape == (batch_size,)
+
+    # 3-class classification (n_outputs=3)
+    model_3class = SmTransformerABMIL(in_shape=in_shape, n_outputs=3)
+    assert model_3class.num_outputs == 3
+    Y_pred = model_3class(X, adj, mask)
+    assert Y_pred.shape == (batch_size, 3)
+
+    # 5-class classification (n_outputs=5)
+    model_5class = SmTransformerABMIL(in_shape=in_shape, n_outputs=5)
+    assert model_5class.num_outputs == 5
+    Y_pred = model_5class(X, adj, mask)
+    assert Y_pred.shape == (batch_size, 5)

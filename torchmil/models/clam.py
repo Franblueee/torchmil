@@ -50,6 +50,7 @@ class CLAM_SB(MILModel):
         gated: bool = False,
         inst_loss_name: str = "SmoothTop1SVM",
         feat_ext: torch.nn.Module = torch.nn.Identity(),
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -60,9 +61,11 @@ class CLAM_SB(MILModel):
             k_sample: Number of instances to sample.
             gated: If True, use gated attention in the attention pooling.
             feat_ext: Feature extractor.
+            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits.
         """
         super().__init__()
+        self.num_outputs = n_outputs
         self.criterion = criterion
         self.feat_ext = feat_ext
         self.k_sample = k_sample
@@ -75,7 +78,7 @@ class CLAM_SB(MILModel):
         self.pool = AttentionPool(
             in_dim=feat_dim, att_dim=att_dim, act=att_act, gated=gated
         )
-        self.classifier = LazyLinear(feat_dim, 1)
+        self.classifier = LazyLinear(feat_dim, n_outputs)
         self.inst_classifiers = torch.nn.ModuleList(
             [LazyLinear(feat_dim, 2) for i in range(2)]
         )

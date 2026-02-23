@@ -99,3 +99,27 @@ def test_with_different_criterion():
     sample_labels = torch.randn(2)  # MSELoss expects float targets
     Y_pred, loss_dict = model.compute_loss(sample_labels, sample_input, sample_mask)
     assert "MSELoss" in loss_dict
+
+
+def test_dsmil_multiclass_support():
+    # Tests multiclass support with different numbers of outputs
+    X = torch.randn(2, 10, 5)  # batch_size, bag_size, feat_dim
+    mask = torch.ones(2, 10)
+
+    # Test binary classification (default)
+    model_binary = DSMIL(in_shape=(10, 5), n_outputs=1)
+    assert model_binary.num_outputs == 1
+    Y_pred = model_binary(X, mask)
+    assert Y_pred.shape == (2,)
+
+    # Test multiclass with 3 classes
+    model_3class = DSMIL(in_shape=(10, 5), n_outputs=3)
+    assert model_3class.num_outputs == 3
+    Y_pred = model_3class(X, mask)
+    assert Y_pred.shape == (2, 3)
+
+    # Test multiclass with 5 classes
+    model_5class = DSMIL(in_shape=(10, 5), n_outputs=5)
+    assert model_5class.num_outputs == 5
+    Y_pred = model_5class(X, mask)
+    assert Y_pred.shape == (2, 5)

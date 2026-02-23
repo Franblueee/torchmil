@@ -113,3 +113,26 @@ def test_abmil_different_pooling_params(sample_data):
     assert Y_pred_relu.shape == (2,)
     assert Y_pred_gelu.shape == (2,)
     assert Y_pred_gated.shape == (2,)
+
+
+def test_abmil_multiclass_support(sample_data):
+    # Tests multiclass support with different numbers of outputs
+    X, _, mask = sample_data
+
+    # Test binary classification (default)
+    model_binary = ABMIL(in_shape=(3, 5), n_outputs=1)
+    assert model_binary.num_outputs == 1
+    Y_pred = model_binary(X, mask)
+    assert Y_pred.shape == (2,)
+
+    # Test multiclass with 3 classes
+    model_3class = ABMIL(in_shape=(3, 5), n_outputs=3)
+    assert model_3class.num_outputs == 3
+    Y_pred = model_3class(X, mask)
+    assert Y_pred.shape == (2, 3)
+
+    # Test multiclass with 5 classes
+    model_5class = ABMIL(in_shape=(3, 5), n_outputs=5)
+    assert model_5class.num_outputs == 5
+    Y_pred = model_5class(X, mask)
+    assert Y_pred.shape == (2, 5)
