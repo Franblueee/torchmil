@@ -1,12 +1,11 @@
 import numpy as np
 
 from .binary_classification_dataset import BinaryClassificationDataset
-from .wsi_dataset import WSIDataset
 
 from ..utils.common import read_csv, keep_only_existing_files
 
 
-class PANDAMILDataset(BinaryClassificationDataset, WSIDataset):
+class PANDAMILDataset(BinaryClassificationDataset):
     r"""
     Prostate cANcer graDe Assessment (PANDA) dataset for Multiple Instance Learning (MIL).
     Download it from [Hugging Face Datasets](https://huggingface.co/datasets/torchmil/PANDA_MIL).
@@ -61,7 +60,7 @@ class PANDAMILDataset(BinaryClassificationDataset, WSIDataset):
         adj_with_dist: bool = False,
         norm_adj: bool = True,
         load_at_init: bool = True,
-        verbose: bool = True,
+        verbose: bool = False,
     ) -> None:
         """
         Arguments:
@@ -80,27 +79,37 @@ class PANDAMILDataset(BinaryClassificationDataset, WSIDataset):
         patch_labels_path = f"{root}/patches_{patch_size}/patch_labels/"
         coords_path = f"{root}/patches_{patch_size}/coords/"
 
+        self.patch_size = patch_size
+
         splits_file = f"{root}/splits.csv"
         dict_list = read_csv(splits_file)
         wsi_names = [row["bag_name"] for row in dict_list if row["split"] == partition]
         wsi_names = list(set(wsi_names))
         wsi_names = keep_only_existing_files(features_path, wsi_names)
 
-        WSIDataset.__init__(
-            self,
+        super().__init__(
             features_path=features_path,
             labels_path=labels_path,
-            patch_labels_path=patch_labels_path,
+            inst_labels_path=patch_labels_path,
             coords_path=coords_path,
-            wsi_names=wsi_names,
+            bag_names=wsi_names,
             bag_keys=bag_keys,
-            patch_size=patch_size,
             adj_with_dist=adj_with_dist,
             norm_adj=norm_adj,
             load_at_init=load_at_init,
+            verbose=verbose,
         )
 
         self.verbose = verbose
+
+    def _load_coords(self, name):
+        coords = super()._load_coords(name)
+        if coords is not None:
+            coords = coords / self.patch_size
+            min_coords = np.min(coords, axis=0)
+            coords = coords - min_coords
+            coords = coords.astype(int)
+        return coords
 
     def _load_bag(self, name: str) -> dict[str, np.ndarray]:
         return BinaryClassificationDataset._load_bag(self, name)

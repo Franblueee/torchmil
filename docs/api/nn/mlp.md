@@ -1,4 +1,4 @@
-# MLP
+# Multi-Layer Perceptron (MLP)
 ::: torchmil.nn.MLP
     options:
         members:

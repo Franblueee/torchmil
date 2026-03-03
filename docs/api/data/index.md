@@ -26,5 +26,4 @@ The data representation in **torchmil** is designed to be flexible and to allow 
 
 ## More information
 
-- [Batches in **torchmil**](collate.md)
-- [Spatial and sequential representation](representation.md)
+<!-- DATA_AUTOLIST -->

@@ -1,0 +1,9 @@
+title: API reference
+nav:
+  - index.md
+  - torchmil.data: data
+  - torchmil.datasets: datasets
+  - torchmil.nn: nn
+  - torchmil.models: models
+  - torchmil.visualize: visualize
+  - torchmil.utils: utils

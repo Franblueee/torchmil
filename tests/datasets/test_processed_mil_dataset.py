@@ -274,8 +274,8 @@ def test_fail_fast_missing_feature_file(
     # Access existing bag should work
     _ = dataset[0]
 
-    # Access missing bag should raise FileNotFoundError
-    with pytest.raises(FileNotFoundError):
+    # Access missing bag should raise FileNotFoundError or ValueError
+    with pytest.raises((FileNotFoundError, ValueError)):
         _ = dataset[1]
 
 
@@ -307,7 +307,7 @@ def test_fail_fast_missing_label_file(
     )
 
     _ = dataset[0]
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises((FileNotFoundError, ValueError)):
         _ = dataset[1]
 
 
@@ -347,7 +347,7 @@ def test_fail_fast_missing_inst_label_file_if_path_provided(
     name_to_idx = {name: i for i, name in enumerate(dataset.bag_names)}
 
     _ = dataset[name_to_idx["bag_with_inst_label"]]  # Should load successfully
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises((FileNotFoundError, ValueError)):
         _ = dataset[
             name_to_idx["bag_missing_inst_label"]
         ]  # Should fail because inst_labels_path was set and y_inst requested, but file is missing
@@ -387,7 +387,7 @@ def test_fail_fast_missing_coords_file_if_path_provided(
     name_to_idx = {name: i for i, name in enumerate(dataset.bag_names)}
 
     _ = dataset[name_to_idx["bag_with_coords"]]  # Should load successfully
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises((FileNotFoundError, ValueError)):
         _ = dataset[
             name_to_idx["bag_missing_coords"]
         ]  # Should fail because coords_path was set and coords requested, but file is missing

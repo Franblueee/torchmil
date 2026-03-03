@@ -1,0 +1,5 @@
+nav:
+  - index.md
+  - Attention: attention
+  - Graph Neural Networks (GNNs): gnns
+  - Transformers: transformers

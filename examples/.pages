@@ -1,0 +1,10 @@
+title: Examples
+nav:
+  - index.md
+  - Representing bags in torchmil: data_representation.ipynb
+  - Datasets in torchmil: datasets.ipynb
+  - Training your first MIL model: training_your_first_mil_model.ipynb
+  - WSI classification: wsi_classification.ipynb
+  - CT scan classification: ctscan_classification.ipynb
+  - Integrating torchmil with Graph Neural Networks (GNNs) frameworks: gnn_integration.ipynb
+  - Shifted Mean MIL dataset: shifted_mean_dataset.ipynb

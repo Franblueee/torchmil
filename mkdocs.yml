@@ -58,6 +58,9 @@ extra_javascript:
 
 extra_css:
   - _static/custom_css.css
+
+hooks:
+  - docs/hooks.py
   
 markdown_extensions:
   - pymdownx.arithmatex:  # Render LaTeX via MathJax
@@ -73,6 +76,7 @@ markdown_extensions:
 
 plugins:
   - search  # default search plugin; needs manually re-enabling when using any other plugins
+  - awesome-pages  # Build nav automatically from the filesystem and optional .pages files
   - autorefs  # Cross-links to headings
   - exclude:
       glob:
@@ -109,99 +113,3 @@ plugins:
             # members_order: source  # order methods according to their order of definition in the source code, not alphabetical order
             heading_level: 4
             docstring_section_style: list
-
-nav:
-  - Introduction:
-    - index.md
-  - Examples:
-    - examples/index.md
-    - Representing bags in torchmil: examples/data_representation.ipynb
-    - Datasets in torchmil: examples/datasets.ipynb
-    - Training your first MIL model: examples/training_your_first_mil_model.ipynb
-    - WSI classification: examples/wsi_classification.ipynb
-    - CT scan classification: examples/ctscan_classification.ipynb
-    - Integrating torchmil with Graph Neural Networks (GNNs) frameworks: examples/gnn_integration.ipynb
-    - Shifted Mean MIL dataset: examples/shifted_mean_dataset.ipynb
-  - API reference:
-    - api/index.md
-    - torchmil.data:
-      - api/data/index.md
-      - api/data/collate.md
-      - api/data/representation.md
-    - torchmil.datasets:
-      - api/datasets/index.md
-      - api/datasets/processed_mil_dataset.md
-      - api/datasets/toy_dataset.md
-      - api/datasets/ctscan_dataset.md
-      - api/datasets/wsi_dataset.md
-      - api/datasets/trident_wsi_dataset.md
-      - api/datasets/binary_classification_dataset.md
-      - api/datasets/video_classification_dataset.md
-      - api/datasets/camelyon16mil_dataset.md
-      - api/datasets/pandamil_dataset.md
-      - api/datasets/rsnamil_dataset.md
-      - api/datasets/tadmil_dataset.md
-      - api/datasets/false_frequency_dataset.md
-      - api/datasets/mc_standard_dataset.md
-      - api/datasets/sc_standard_dataset.md
-      - api/datasets/shifted_mean_dataset.md
-    - torchmil.nn:
-      - api/nn/index.md
-      - Attention:
-        - api/nn/attention/index.md
-        - api/nn/attention/attention_pool.md
-        - api/nn/attention/sm_attention_pool.md
-        - api/nn/attention/prob_smooth_attention_pool.md
-        - api/nn/attention/multihead_self_attention.md
-        - api/nn/attention/irpe_multihead_self_attention.md
-        - api/nn/attention/nystrom_attention.md
-        - api/nn/attention/multihead_cross_attention.md
-      - Graph Neural Networks (GNNs):
-        - api/nn/gnns/index.md
-        - api/nn/gnns/deepgcn.md
-        - api/nn/gnns/gcn_conv.md
-        - api/nn/gnns/dense_mincut_pool.md
-        - api/nn/gnns/chebconv.md
-      - Transformers:
-        - api/nn/transformers/index.md
-        - api/nn/transformers/base_transformer.md
-        - api/nn/transformers/conventional_transformer.md
-        - api/nn/transformers/sm_transformer.md
-        - api/nn/transformers/nystrom_transformer.md
-        - api/nn/transformers/irpe_transformer.md
-        - api/nn/transformers/t2t.md
-      - api/nn/sm.md
-      - api/nn/mean_pool.md
-      - api/nn/max_pool.md
-      - api/nn/mlp.md
-      - api/nn/variational_autoencoder.md
-    - torchmil.models:
-      - api/models/index.md
-      - api/models/mil_model.md
-      - api/models/abmil.md
-      - api/models/camil.md
-      - api/models/clam.md
-      - api/models/deepgraphsurv.md
-      - api/models/dtfdmil.md
-      - api/models/dsmil.md
-      - api/models/gtp.md
-      - api/models/iibmil.md
-      - api/models/patch_gcn.md
-      - api/models/prob_smooth_abmil.md
-      - api/models/sm_abmil.md
-      - api/models/sm_transformer_abmil.md
-      - api/models/transformer_abmil.md
-      - api/models/transformer_prob_smooth_abmil.md
-      - api/models/transmil.md
-      - api/models/setmil.md
-      - api/models/iibmil.md
-      - api/models/vaeabmil.md
-    - torchmil.visualize:
-      - api/visualize/index.md
-      - api/visualize/vis_ctscan.md
-      - api/visualize/vis_wsi.md
-    - torchmil.utils:
-      - api/utils/index.md
-      - api/utils/annealing_scheduler.md
-      - api/utils/graph_utils.md
-      - api/utils/trainer.md

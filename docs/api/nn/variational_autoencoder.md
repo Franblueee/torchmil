@@ -1,4 +1,4 @@
-# Variational Autoencoder
+# Variational Autoencoder (VAE)
 ::: torchmil.nn.VariationalAutoEncoder
     options:
         members:

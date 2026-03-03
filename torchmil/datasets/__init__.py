@@ -9,8 +9,7 @@ from .rsnamil_dataset import RSNAMILDataset as RSNAMILDataset
 from .tadmil_dataset import TADMILDataset as TADMILDataset
 
 from .toy_dataset import ToyDataset as ToyDataset
-from .corr_toy_dataset import ShiftedMeanMILDataset as ShiftedMeanMILDataset
-from .wsi_dataset import WSIDataset as WSIDataset
+from .shifted_mean_mil_dataset import ShiftedMeanMILDataset as ShiftedMeanMILDataset
 from .ctscan_dataset import CTScanDataset as CTScanDataset
 from .video_classification_dataset import (
     VideoClassificationDataset as VideoClassificationDataset,

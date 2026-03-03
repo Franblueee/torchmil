@@ -24,7 +24,8 @@ dependencies = [
   "scipy",
   "tqdm",
   "numpy",
-  "h5py"
+  "h5py",
+  "pandas"
 ]
 description = "Deep Multiple Instance Learning library for Pytorch"
 keywords = [
@@ -49,6 +50,7 @@ dev = [
 docs = [
   "mkdocs",
   "mkdocs-material",
+  "mkdocs-awesome-pages-plugin",
   "mknotebooks",
   "mkdocstrings",
   "mkdocstrings-python",
