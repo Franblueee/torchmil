@@ -1,6 +1,6 @@
 import torch
 
-from torchmil.models.mil_model import MILModel
+from torchmil.models.mil_model import MILModel, compute_criterion_loss, init_criterion, squeeze_binary_logits
 
 from torchmil.nn.utils import get_feat_dim, SinusoidalPositionalEncodingND
 
@@ -240,7 +240,7 @@ class SETMIL(MILModel):
         """
         super().__init__()
         self.num_outputs = n_outputs
-        self.criterion = criterion
+        self.criterion = init_criterion(n_outputs, criterion)
 
         self.feat_ext = feat_ext
         feat_dim = get_feat_dim(feat_ext, in_shape)
@@ -373,7 +373,7 @@ class SETMIL(MILModel):
 
         z = X[:, 0]  # (batch_size, att_dim)
 
-        Y_pred = self.classifier(z).squeeze(-1)  # (batch_size, 1)
+        Y_pred = squeeze_binary_logits(self.classifier(z), self.num_outputs)
 
         if return_att:
             return Y_pred, att
@@ -400,7 +400,7 @@ class SETMIL(MILModel):
         """
         Y_pred = self.forward(X, coords, return_att=False)
 
-        crit_loss = self.criterion(Y_pred.float(), Y.float())
+        crit_loss = compute_criterion_loss(self.criterion, Y_pred, Y, self.num_outputs)
         crit_name = self.criterion.__class__.__name__
 
         return Y_pred, {crit_name: crit_loss}

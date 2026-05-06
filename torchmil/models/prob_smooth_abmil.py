@@ -61,7 +61,6 @@ class ProbSmoothABMIL(MILModel):
         n_samples_train: int = 1000,
         n_samples_test: int = 5000,
         feat_ext: torch.nn.Module = torch.nn.Identity(),
-        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -72,11 +71,9 @@ class ProbSmoothABMIL(MILModel):
             n_samples_train: Number of samples for training.
             n_samples_test: Number of samples for testing.
             feat_ext: Feature extractor.
-            n_outputs: Number of outputs. By default, 1 (binary classification).
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits for binary classification.
         """
         super().__init__()
-        self.num_outputs = n_outputs
         self.criterion = criterion
 
         self.feat_ext = feat_ext
@@ -91,7 +88,7 @@ class ProbSmoothABMIL(MILModel):
             n_samples_train=n_samples_train,
             n_samples_test=n_samples_test,
         )
-        self.classifier = LazyLinear(feat_dim, n_outputs)
+        self.classifier = LazyLinear(feat_dim, 1)
 
     def forward(
         self,
@@ -137,12 +134,11 @@ class ProbSmoothABMIL(MILModel):
                 z = out_pool
 
         z = z.transpose(1, 2)  # (batch_size, n_samples, feat_dim)
-        Y_pred = self.classifier(z)  # (batch_size, n_samples, n_outputs)
-        if self.num_outputs == 1:
-            Y_pred = Y_pred.squeeze(-1)  # (batch_size, n_samples)
+        Y_pred = self.classifier(z)  # (batch_size, n_samples, 1)
+        Y_pred = Y_pred.squeeze(-1)  # (batch_size, n_samples)
 
         if not return_samples:
-            Y_pred = Y_pred.mean(dim=1)  # (batch_size,) or (batch_size, n_outputs)
+            Y_pred = Y_pred.mean(dim=-1)  # (batch_size,)
             if return_att:
                 f = f.mean(dim=-1)  # (batch_size, bag_size)
 
@@ -176,16 +172,10 @@ class ProbSmoothABMIL(MILModel):
 
         Y_pred, kl_div = self.forward(
             X, adj, mask, return_att=False, return_samples=True, return_kl_div=True
-        )  # (batch_size, n_samples) if n_outputs==1, (batch_size, n_samples, n_outputs) if n_outputs>1
-        Y_pred_mean = Y_pred.mean(dim=1)  # (batch_size,) or (batch_size, n_outputs)
+        )  # (batch_size, n_samples)
+        Y_pred_mean = Y_pred.mean(dim=-1)  # (batch_size,)
 
-        # Expand Y to match Y_pred shape for loss computation
-        if self.num_outputs == 1:
-            Y = Y.unsqueeze(-1).expand_as(Y_pred)  # (batch_size, n_samples)
-        else:
-            Y = (
-                Y.unsqueeze(-1).unsqueeze(-1).expand_as(Y_pred)
-            )  # (batch_size, 1, 1) -> (batch_size, n_samples, n_outputs)
+        Y = Y.unsqueeze(-1).expand(-1, Y_pred.shape[-1])
         crit_loss = self.criterion(Y_pred.float(), Y.float())
         crit_name = self.criterion.__class__.__name__
 

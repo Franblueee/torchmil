@@ -52,6 +52,8 @@ class IIBMIL(torch.nn.Module):
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits.
         """
         super().__init__()
+        if n_outputs > 1:
+            raise ValueError("IIBMIL only supports binary classification (n_outputs=1).")
         self.num_outputs = n_outputs
         self.criterion = criterion
         self.feat_ext = feat_ext
@@ -291,7 +293,7 @@ class IIBMIL(torch.nn.Module):
             X, mask, return_inst_pred=True, return_X_enc=True
         )
         inst_loss = self._inst_loss(X_enc, y_pred, mask)
-        crit_loss = self.criterion(Y_pred.float(), Y.float())
+        crit_loss = self.criterion(Y_pred.float(), Y.float().view_as(Y_pred))
         crit_name = self.criterion.__class__.__name__
 
         return Y_pred, {crit_name: crit_loss, "InstLoss": inst_loss}

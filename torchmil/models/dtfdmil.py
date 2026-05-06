@@ -43,6 +43,7 @@ class DTFDMIL(MILModel):
         n_groups: int = 8,
         distill_mode: str = "maxmin",
         feat_ext: torch.nn.Module = torch.nn.Identity(),
+        n_outputs: int = 1,
         criterion: torch.nn.Module = torch.nn.BCEWithLogitsLoss(),
     ) -> None:
         """
@@ -52,10 +53,13 @@ class DTFDMIL(MILModel):
             n_groups: Number of groups to split the bag instances.
             distill_mode: Distillation mode. Possible values: 'maxmin', 'max', 'afs'.
             feat_ext: Feature extractor.
+            n_outputs: Number of outputs. DTFDMIL only supports 1 output for binary classification.
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits.
         """
 
         super(DTFDMIL, self).__init__()
+        if n_outputs > 1:
+            raise ValueError("DTFDMIL only supports binary classification (n_outputs=1).")
         self.feat_ext = feat_ext
         self.criterion = criterion
         self.n_groups = n_groups

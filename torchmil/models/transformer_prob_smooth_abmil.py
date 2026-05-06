@@ -1,7 +1,7 @@
 import torch
 from torch import Tensor
 
-from torchmil.models.mil_model import MILModel
+from torchmil.models.mil_model import MILModel, init_criterion
 from torchmil.nn import ProbSmoothAttentionPool, TransformerEncoder
 from torchmil.nn.utils import get_feat_dim, LazyLinear
 
@@ -90,7 +90,7 @@ class TransformerProbSmoothABMIL(MILModel):
         """
         super().__init__()
         self.num_outputs = n_outputs
-        self.criterion = criterion
+        self.criterion = init_criterion(n_outputs, criterion)
 
         self.feat_ext = feat_ext
         if in_shape is not None:
@@ -202,10 +202,17 @@ class TransformerProbSmoothABMIL(MILModel):
         Y_pred, kl_div = self.forward(
             X, adj, mask, return_att=False, return_samples=True, return_kl_div=True
         )  # (batch_size, n_samples)
-        Y_pred_mean = Y_pred.mean(dim=-1)  # (batch_size,)
+        Y_pred_mean = Y_pred.mean(dim=1)  # (batch_size,) or (batch_size, n_outputs)
 
-        Y = Y.unsqueeze(-1).expand(-1, Y_pred.shape[-1])
-        crit_loss = self.criterion(Y_pred.float(), Y.float())
+        if self.num_outputs == 1:
+            Y = Y.unsqueeze(-1).expand(-1, Y_pred.shape[-1])
+            crit_loss = self.criterion(Y_pred.float(), Y.float())
+        else:
+            batch_size, n_samples, n_outputs = Y_pred.shape
+            crit_loss = self.criterion(
+                Y_pred.reshape(batch_size * n_samples, n_outputs).float(),
+                Y.long().view(-1).repeat_interleave(n_samples),
+            )
         crit_name = self.criterion.__class__.__name__
 
         return Y_pred_mean, {crit_name: crit_loss, "KLDiv": kl_div}

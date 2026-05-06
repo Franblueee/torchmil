@@ -1,6 +1,6 @@
 import torch
 
-from .mil_model import MILModel
+from .mil_model import MILModel, compute_criterion_loss, init_criterion, squeeze_binary_logits
 
 from torchmil.nn.relprop import TransformerEncoder, Linear, IndexSelect
 from torchmil.nn.utils import get_feat_dim
@@ -75,7 +75,7 @@ class GTP(MILModel):
         """
         super().__init__()
         self.num_outputs = n_outputs
-        self.criterion = criterion
+        self.criterion = init_criterion(n_outputs, criterion)
 
         self.feat_ext = feat_ext
         feat_dim = get_feat_dim(feat_ext, in_shape)
@@ -160,10 +160,7 @@ class GTP(MILModel):
             cam = torch.bmm(S, cam).squeeze(-1)  # (batch_size, bag_size)
 
         # Squeeze Y_pred after relprop to avoid shape mismatch
-        if self.num_outputs == 1:
-            Y_pred = Y_pred_raw.squeeze()  # (batch_size,)
-        else:
-            Y_pred = Y_pred_raw.squeeze(1)  # (batch_size, n_outputs)
+        Y_pred = squeeze_binary_logits(Y_pred_raw.squeeze(1), self.num_outputs)
 
         if return_loss:
             loss_dict = {"MinCutLoss": mc_loss, "OrthoLoss": o_loss}
@@ -224,7 +221,7 @@ class GTP(MILModel):
             X, adj, mask, return_cam=False, return_loss=True
         )
 
-        crit_loss = self.criterion(Y_pred.float(), Y.float())
+        crit_loss = compute_criterion_loss(self.criterion, Y_pred, Y, self.num_outputs)
         crit_name = self.criterion.__class__.__name__
 
         return Y_pred, {crit_name: crit_loss, **loss_dict}

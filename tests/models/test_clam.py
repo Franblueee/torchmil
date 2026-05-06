@@ -112,22 +112,11 @@ def test_clam_sb_invalid_inst_loss_name():
         CLAM_SB(in_shape=(10,), inst_loss_name="InvalidLoss")
 
 
-def test_clam_sb_multiclass_support(features, mask):
-    # Tests multiclass support with different numbers of outputs
-    # Test binary classification (default)
+def test_clam_sb_rejects_multiclass(features, mask):
     model_binary = CLAM_SB(in_shape=(10,), n_outputs=1)
     assert model_binary.num_outputs == 1
     Y_pred = model_binary(features, mask)
     assert Y_pred.shape == (2,)
 
-    # Test multiclass with 3 classes
-    model_3class = CLAM_SB(in_shape=(10,), n_outputs=3)
-    assert model_3class.num_outputs == 3
-    Y_pred = model_3class(features, mask)
-    assert Y_pred.shape == (2, 3)
-
-    # Test multiclass with 5 classes
-    model_5class = CLAM_SB(in_shape=(10,), n_outputs=5)
-    assert model_5class.num_outputs == 5
-    Y_pred = model_5class(features, mask)
-    assert Y_pred.shape == (2, 5)
+    with pytest.raises(ValueError, match="only supports binary classification"):
+        CLAM_SB(in_shape=(10,), n_outputs=3)

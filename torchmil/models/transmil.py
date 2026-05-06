@@ -4,6 +4,7 @@ import numpy as np
 from torchmil.nn.utils import get_feat_dim
 from torchmil.nn import NystromTransformerLayer
 from torchmil.models import MILModel
+from torchmil.models.mil_model import compute_criterion_loss, init_criterion, squeeze_binary_logits
 
 
 class PPEG(torch.nn.Module):
@@ -133,7 +134,7 @@ class TransMIL(MILModel):
         self.norm = torch.nn.LayerNorm(att_dim)
         self.classifier = torch.nn.Linear(att_dim, n_outputs)
 
-        self.criterion = criterion
+        self.criterion = init_criterion(n_outputs, criterion)
 
     def forward(
         self, X: torch.Tensor, return_att: bool = False
@@ -204,7 +205,9 @@ class TransMIL(MILModel):
         cls_token = X[:, 0]  # (batch_size, att_dim)
 
         # predict
-        bag_pred = self.classifier(cls_token).squeeze(-1)  # (batch_size,)
+        bag_pred = squeeze_binary_logits(
+            self.classifier(cls_token), self.num_outputs
+        )  # (batch_size,) or (batch_size, n_outputs)
 
         if return_att:
             return bag_pred, attn
@@ -230,7 +233,7 @@ class TransMIL(MILModel):
 
         Y_pred = self.forward(X, return_att=False)
 
-        crit_loss = self.criterion(Y_pred.float(), Y.float())
+        crit_loss = compute_criterion_loss(self.criterion, Y_pred, Y, self.num_outputs)
         crit_name = self.criterion.__class__.__name__
 
         return Y_pred, {crit_name: crit_loss}

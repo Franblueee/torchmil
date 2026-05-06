@@ -4,6 +4,29 @@ import torch
 from tensordict import TensorDict
 
 
+def init_criterion(n_outputs: int, criterion: torch.nn.Module) -> torch.nn.Module:
+    if n_outputs > 1 and isinstance(criterion, torch.nn.BCEWithLogitsLoss):
+        return torch.nn.CrossEntropyLoss()
+    return criterion
+
+
+def compute_criterion_loss(
+    criterion: torch.nn.Module,
+    Y_pred: torch.Tensor,
+    Y: torch.Tensor,
+    n_outputs: int,
+) -> torch.Tensor:
+    if n_outputs == 1:
+        return criterion(Y_pred.float(), Y.float().view_as(Y_pred))
+    return criterion(Y_pred.float(), Y.long().view(-1))
+
+
+def squeeze_binary_logits(Y_pred: torch.Tensor, n_outputs: int) -> torch.Tensor:
+    if n_outputs == 1:
+        return Y_pred.squeeze(-1)
+    return Y_pred
+
+
 def get_args_names(fn):
     args_names = fn.__code__.co_varnames[: fn.__code__.co_argcount]
     # remove self from arg_names if exists

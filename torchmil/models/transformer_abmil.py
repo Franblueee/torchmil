@@ -1,6 +1,6 @@
 import torch
 
-from .mil_model import MILModel
+from .mil_model import MILModel, compute_criterion_loss, init_criterion, squeeze_binary_logits
 
 from torchmil.nn import AttentionPool, TransformerEncoder
 from torchmil.nn.utils import get_feat_dim
@@ -64,7 +64,7 @@ class TransformerABMIL(MILModel):
         """
         super().__init__()
         self.num_outputs = n_outputs
-        self.criterion = criterion
+        self.criterion = init_criterion(n_outputs, criterion)
 
         self.feat_ext = feat_ext
         feat_dim = get_feat_dim(feat_ext, in_shape)
@@ -109,7 +109,7 @@ class TransformerABMIL(MILModel):
             z = out_pool  # (batch_size, emb_dim)
 
         Y_pred = self.last_layer(z)  # (batch_size, n_samples, 1)
-        Y_pred = Y_pred.squeeze(-1)  # (batch_size,)
+        Y_pred = squeeze_binary_logits(Y_pred, self.num_outputs)
 
         if return_att:
             return Y_pred, f
@@ -137,7 +137,7 @@ class TransformerABMIL(MILModel):
 
         Y_pred = self.forward(X, mask, return_att=False)
 
-        crit_loss = self.criterion(Y_pred.float(), Y.float())
+        crit_loss = compute_criterion_loss(self.criterion, Y_pred, Y, self.num_outputs)
         crit_name = self.criterion.__class__.__name__
 
         return Y_pred, {crit_name: crit_loss}

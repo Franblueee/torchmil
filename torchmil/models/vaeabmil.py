@@ -1,6 +1,6 @@
 import torch
 
-from .mil_model import MILModel
+from .mil_model import MILModel, compute_criterion_loss, init_criterion, squeeze_binary_logits
 from torchmil.nn import AttentionPool, LazyLinear
 from torchmil.nn.utils import get_feat_dim
 from torchmil.nn import VariationalAutoEncoderMIL
@@ -49,7 +49,7 @@ class VAEABMIL(MILModel):
         """
         super().__init__()
         self.num_outputs = n_outputs
-        self.criterion = criterion
+        self.criterion = init_criterion(n_outputs, criterion)
         self.vae_loss_reduction = vae_loss_reduction
 
         self.feat_ext = feat_ext
@@ -98,7 +98,7 @@ class VAEABMIL(MILModel):
             Z = out_pool  # (batch_size, feat_dim)
 
         Y_pred = self.classifier(Z)  # (batch_size, 1)
-        Y_pred = Y_pred.squeeze(-1)  # (batch_size,)
+        Y_pred = squeeze_binary_logits(Y_pred, self.num_outputs)
 
         if return_att:
             return Y_pred, f
@@ -131,7 +131,7 @@ class VAEABMIL(MILModel):
             X, n_samples=n_samples, reduction=self.vae_loss_reduction
         )
 
-        crit_loss = self.criterion(Y_pred.float(), Y.float())
+        crit_loss = compute_criterion_loss(self.criterion, Y_pred, Y, self.num_outputs)
         crit_name = self.criterion.__class__.__name__
 
         return Y_pred, {crit_name: crit_loss, **vae_loss}

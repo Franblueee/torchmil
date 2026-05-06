@@ -2,7 +2,7 @@ from typing import Union
 
 import torch
 
-from torchmil.models.mil_model import MILModel
+from torchmil.models.mil_model import MILModel, compute_criterion_loss, init_criterion, squeeze_binary_logits
 
 from torchmil.nn import SmAttentionPool
 
@@ -71,9 +71,10 @@ class SmABMIL(MILModel):
             sm_where=sm_where,
             spectral_norm=spectral_norm,
         )
-        self.last_layer = torch.nn.Linear(feat_dim, n_outputs)
+        self.classifier = torch.nn.Linear(feat_dim, n_outputs)
+        self.last_layer = self.classifier
 
-        self.criterion = criterion
+        self.criterion = init_criterion(n_outputs, criterion)
 
     def forward(
         self,
@@ -105,8 +106,8 @@ class SmABMIL(MILModel):
         else:
             Z = out_pool  # (batch_size, feat_dim)
 
-        Y_pred = self.last_layer(Z)  # (batch_size, 1)
-        Y_pred = Y_pred.squeeze(-1)  # (batch_size,)
+        Y_pred = self.classifier(Z)  # (batch_size, 1)
+        Y_pred = squeeze_binary_logits(Y_pred, self.num_outputs)
 
         if return_att:
             return Y_pred, f
@@ -136,7 +137,7 @@ class SmABMIL(MILModel):
 
         Y_pred = self.forward(X, adj, mask, return_att=False)
 
-        crit_loss = self.criterion(Y_pred.float(), Y.float())
+        crit_loss = compute_criterion_loss(self.criterion, Y_pred, Y, self.num_outputs)
         crit_name = self.criterion.__class__.__name__
 
         return Y_pred, {crit_name: crit_loss}

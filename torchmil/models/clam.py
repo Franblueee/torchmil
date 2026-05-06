@@ -65,6 +65,8 @@ class CLAM_SB(MILModel):
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits.
         """
         super().__init__()
+        if n_outputs > 1:
+            raise ValueError("CLAM_SB only supports binary classification (n_outputs=1).")
         self.num_outputs = n_outputs
         self.criterion = criterion
         self.feat_ext = feat_ext
@@ -165,9 +167,12 @@ class CLAM_SB(MILModel):
         all_instances = torch.cat([top_p, top_n], dim=0)  # (2 * k_sample, feat_dim)
         logits = classifier(all_instances)  # (2 * k_sample, 2)
         all_preds = torch.topk(logits, 1, dim=1)[1]  # (2 * k_sample,)
-        instance_loss = self.inst_loss_fn(
-            logits.float(), all_targets.unsqueeze(-1).float()
-        )
+        if isinstance(self.inst_loss_fn, SmoothTop1SVM):
+            instance_loss = self.inst_loss_fn(logits.float(), all_targets)
+        else:
+            instance_loss = self.inst_loss_fn(
+                logits.float(), torch.nn.functional.one_hot(all_targets, 2).float()
+            )
         return instance_loss, all_preds, all_targets
 
     def inst_eval_out(
@@ -208,9 +213,12 @@ class CLAM_SB(MILModel):
         p_targets = self.create_negative_targets(k_sample, device)  # (k_sample,)
         logits = classifier(top_p)  # (k_sample, 2)
         p_preds = torch.topk(logits, 1, dim=1)[1]  # (k_sample,)
-        instance_loss = self.inst_loss_fn(
-            logits.float(), p_targets.unsqueeze(-1).float()
-        )  # (k_sample,)
+        if isinstance(self.inst_loss_fn, SmoothTop1SVM):
+            instance_loss = self.inst_loss_fn(logits.float(), p_targets)
+        else:
+            instance_loss = self.inst_loss_fn(
+                logits.float(), torch.nn.functional.one_hot(p_targets, 2).float()
+            )  # (k_sample,)
         return instance_loss, p_preds, p_targets
 
     def compute_inst_loss(
@@ -316,7 +324,7 @@ class CLAM_SB(MILModel):
             loss_dict: Dictionary containing the loss value.
         """
         Y_pred, att, emb = self.forward(X, mask, return_att=True, return_emb=True)
-        crit_loss = self.criterion(Y_pred.float(), Y.float())
+        crit_loss = self.criterion(Y_pred.float(), Y.float().view_as(Y_pred))
         crit_name = self.criterion.__class__.__name__
         inst_loss = self.compute_inst_loss(att, emb, Y)
 

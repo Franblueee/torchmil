@@ -3,6 +3,7 @@ import torch.nn as nn
 
 from torchmil.nn import NystromTransformerLayer
 from torchmil.models import MILModel
+from torchmil.models.mil_model import compute_criterion_loss, init_criterion, squeeze_binary_logits
 
 from torchmil.nn.utils import masked_softmax, get_feat_dim
 
@@ -189,7 +190,7 @@ class CAMIL(MILModel):
         super(CAMIL, self).__init__()
         self.num_outputs = n_outputs
         self.feat_ext = feat_ext
-        self.criterion = criterion
+        self.criterion = init_criterion(n_outputs, criterion)
 
         feat_dim = get_feat_dim(feat_ext, in_shape)
 
@@ -217,7 +218,7 @@ class CAMIL(MILModel):
 
         self.classifier = nn.Linear(nystrom_att_dim, n_outputs)
 
-        self.criterion = criterion
+        self.criterion = init_criterion(n_outputs, criterion)
 
     def forward(
         self,
@@ -259,8 +260,7 @@ class CAMIL(MILModel):
             z = self.camil_att_pool(T, M, mask)  # (batch_size, feat_dim)
 
         Y_pred = self.classifier(z)  # (batch_size, n_outputs)
-        if self.num_outputs == 1:
-            Y_pred = Y_pred.squeeze(dim=-1)  # (batch_size,)
+        Y_pred = squeeze_binary_logits(Y_pred, self.num_outputs)
 
         if return_att:
             return Y_pred, att
@@ -290,7 +290,7 @@ class CAMIL(MILModel):
 
         Y_pred = self.forward(X, adj, mask, return_att=False)
 
-        crit_loss = self.criterion(Y_pred.float(), Y.float())
+        crit_loss = compute_criterion_loss(self.criterion, Y_pred, Y, self.num_outputs)
         crit_name = self.criterion.__class__.__name__
 
         return Y_pred, {crit_name: crit_loss}

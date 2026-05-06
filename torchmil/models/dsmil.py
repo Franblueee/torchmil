@@ -65,6 +65,8 @@ class DSMIL(MILModel):
             criterion: Loss function. By default, Binary Cross-Entropy loss from logits.
         """
         super(DSMIL, self).__init__()
+        if n_outputs > 1:
+            raise ValueError("DSMIL only supports binary classification (n_outputs=1).")
         self.num_outputs = n_outputs
         self.criterion = criterion
         self.feat_ext = feat_ext
@@ -149,7 +151,7 @@ class DSMIL(MILModel):
 
         Y_pred = self.bag_classifier(z)  # (batch_size, 1, n_outputs)
         if self.num_outputs == 1:
-            Y_pred = Y_pred.squeeze()  # (batch_size,)
+            Y_pred = Y_pred.squeeze(1).squeeze(-1)  # (batch_size,)
         else:
             Y_pred = Y_pred.squeeze(1)  # (batch_size, n_outputs)
 
@@ -188,9 +190,9 @@ class DSMIL(MILModel):
         Y_pred, y_pred = self.forward(X, mask, return_inst_pred=True)
         max_pred, _ = torch.max(y_pred, 1)  # (batch_size,)
         bag_pred = 0.5 * (Y_pred + max_pred)  # (batch_size,)
-        crit_loss = self.criterion(Y_pred.float(), Y.float())
+        crit_loss = self.criterion(Y_pred.float(), Y.float().view_as(Y_pred))
         crit_name = self.criterion.__class__.__name__
-        max_loss = self.criterion(max_pred.float(), Y.float())
+        max_loss = self.criterion(max_pred.float(), Y.float().view_as(max_pred))
         return bag_pred, {crit_name: crit_loss, f"{crit_name}_max": max_loss}
 
     def predict(

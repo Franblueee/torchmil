@@ -1,6 +1,7 @@
 import torch
 
 from torchmil.nn import AttentionPool, GCNConv, DeepGCNLayer
+from torchmil.models.mil_model import compute_criterion_loss, init_criterion, squeeze_binary_logits
 
 from torchmil.nn.utils import get_feat_dim, LazyLinear
 
@@ -59,7 +60,7 @@ class PatchGCN(torch.nn.Module):
         """
         super(PatchGCN, self).__init__()
         self.num_outputs = n_outputs
-        self.criterion = criterion
+        self.criterion = init_criterion(n_outputs, criterion)
         self.feat_ext = feat_ext
 
         feat_dim = get_feat_dim(feat_ext, in_shape)
@@ -131,7 +132,7 @@ class PatchGCN(torch.nn.Module):
         else:
             z = self.pool(X_, mask)  # (batch_size, hidden_dim)
 
-        Y_pred = self.classifier(z).squeeze(1)  # (batch_size,)
+        Y_pred = squeeze_binary_logits(self.classifier(z), self.num_outputs)
 
         if return_att:
             bag_size = X.shape[1]
@@ -159,7 +160,7 @@ class PatchGCN(torch.nn.Module):
             loss_dict: Dictionary containing the loss
         """
         Y_pred = self.forward(X, adj, mask)
-        crit_loss = self.criterion(Y_pred.float(), Y.float())
+        crit_loss = compute_criterion_loss(self.criterion, Y_pred, Y, self.num_outputs)
         crit_name = self.criterion.__class__.__name__
         return Y_pred, {crit_name: crit_loss}
 

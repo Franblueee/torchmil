@@ -233,6 +233,9 @@ class SmoothTop1SVM(torch.nn.Module):
             loss: Loss tensor of shape `(batch_size,)`.
         """
 
+        if y.dim() > 1:
+            y = y.argmax(dim=1)
+
         # if x.shape[1] == 1:
         #     x = torch.cat([x, -x], 1) # add dummy dimension for binary classification
 
@@ -262,9 +265,9 @@ class SmoothTop1SVM(torch.nn.Module):
             loss: Hard loss tensor of shape `(batch_size,)`.
         """
 
-        y = y.long()
+        y = y.long().view(-1, 1)
         # max oracle
-        max_, _ = (x + delta(y, self.labels, self.alpha)).max(1)
+        max_, _ = (x + delta(y.squeeze(1), self.labels, self.alpha)).max(1)
         # subtract ground truth
         loss = max_ - x.gather(1, y).squeeze()
         return loss
@@ -281,9 +284,9 @@ class SmoothTop1SVM(torch.nn.Module):
             loss: Smooth loss tensor of shape `(batch_size,)`.
         """
 
-        y = y.long()
+        y = y.long().view(-1, 1)
         # add loss term and subtract ground truth score
-        x = x + delta(y, self.labels, self.alpha) - x.gather(1, y)
+        x = x + delta(y.squeeze(1), self.labels, self.alpha) - x.gather(1, y)
         # compute loss
         loss = self.tau * log_sum_exp(x / self.tau)
 
