@@ -186,12 +186,14 @@ class Trainer:
 
         if mode == "train":
             name = "Train"
+            self.model.train()
         elif mode == "val":
             name = "Validation"
+            self.model.eval()
         elif mode == "test":
             name = "Test"
+            self.model.eval()
 
-        self.model.train()
         pbar = tqdm(
             enumerate(dataloader), total=len(dataloader), disable=self.disable_pbar
         )
