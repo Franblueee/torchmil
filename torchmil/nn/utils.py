@@ -174,7 +174,7 @@ def delta(y, labels, alpha=None):
     Compute zero-one loss matrix for a vector of ground truth y
 
     Arguments:
-        y: Ground truth labels, of shape `(batch_size, n_classes)`.
+        y: Ground truth class indices, of shape `(batch_size,)`.
         labels: Possible labels, of shape `(n_classes,)`.
         alpha: Regularization parameter.
 
@@ -227,10 +227,10 @@ class SmoothTop1SVM(torch.nn.Module):
 
         Arguments:
             x: Input tensor of shape `(batch_size, n_classes)`. If `n_classes=1`, the tensor is assumed to be the positive class score.
-            y: Target tensor of shape `(batch_size,)`.
+            y: Target class indices of shape `(batch_size,)` or `(batch_size, 1)`.
 
         Returns:
-            loss: Loss tensor of shape `(batch_size,)`.
+            loss: Scalar mean loss over the batch.
         """
 
         # if x.shape[1] == 1:
@@ -256,17 +256,17 @@ class SmoothTop1SVM(torch.nn.Module):
 
         Arguments:
             x: Input tensor of shape `(batch_size, n_classes)`.
-            y: Target tensor of shape `(batch_size,)`.
+            y: Target class indices of shape `(batch_size,)` or `(batch_size, 1)`.
 
         Returns:
             loss: Hard loss tensor of shape `(batch_size,)`.
         """
 
-        y = y.long()
+        y = y.long().reshape(-1)
         # max oracle
         max_, _ = (x + delta(y, self.labels, self.alpha)).max(1)
         # subtract ground truth
-        loss = max_ - x.gather(1, y).squeeze()
+        loss = max_ - x.gather(1, y[:, None]).squeeze(1)
         return loss
 
     def smooth_loss(self, x, y):
@@ -275,15 +275,15 @@ class SmoothTop1SVM(torch.nn.Module):
 
         Arguments:
             x: Input tensor of shape `(batch_size, n_classes)`.
-            y: Target tensor of shape `(batch_size,)`.
+            y: Target class indices of shape `(batch_size,)` or `(batch_size, 1)`.
 
         Returns:
             loss: Smooth loss tensor of shape `(batch_size,)`.
         """
 
-        y = y.long()
+        y = y.long().reshape(-1)
         # add loss term and subtract ground truth score
-        x = x + delta(y, self.labels, self.alpha) - x.gather(1, y)
+        x = x + delta(y, self.labels, self.alpha) - x.gather(1, y[:, None])
         # compute loss
         loss = self.tau * log_sum_exp(x / self.tau)
 

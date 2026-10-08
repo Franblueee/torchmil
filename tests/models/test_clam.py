@@ -99,6 +99,16 @@ def test_clam_sb_inst_eval_out(features):
     assert p_targets.shape == (min(model.k_sample, features.shape[1]),)
 
 
+def test_clam_sb_inst_eval_loss_value():
+    model = CLAM_SB(in_shape=(2,), att_dim=2, k_sample=1)
+    att = torch.tensor([2.0, 1.0])
+    emb = torch.tensor([[0.0, 2.0], [2.0, 0.0]])
+    loss, _, targets = model.inst_eval(att, emb, torch.nn.Identity())
+
+    torch.testing.assert_close(targets, torch.tensor([1, 0]))
+    torch.testing.assert_close(loss, torch.nn.functional.softplus(torch.tensor(-1.0)))
+
+
 def test_clam_sb_compute_inst_loss(features, labels):
     model = CLAM_SB(in_shape=(10,))
     att = torch.randn(features.shape[0], features.shape[1])

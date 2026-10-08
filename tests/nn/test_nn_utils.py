@@ -97,18 +97,50 @@ def test_log_sum_exp():
 # delta tests
 def test_delta():
     y = torch.tensor([0, 1, 2])
-    y = torch.nn.functional.one_hot(y, num_classes=4)
     labels = torch.tensor([0, 1, 2, 3])
     result = delta(y, labels)
-    assert result.shape == (3, 1, 4)
+    expected = torch.tensor([[0, 1, 1, 1], [1, 0, 1, 1], [1, 1, 0, 1]]).float()
+    torch.testing.assert_close(result, expected)
 
 
 # SmoothTop1SVM tests
-def test_smooth_top1_svm():
-    loss_fn = SmoothTop1SVM(n_classes=4)
-    x = torch.randn(2, 4)
-    y = torch.tensor([1, 2])
-    # one hot encoding
-    y = torch.nn.functional.one_hot(y, num_classes=4)
-    result = loss_fn(x, y)
-    assert result.shape == ()
+@pytest.mark.parametrize("column_targets", [False, True])
+def test_smooth_top1_svm(column_targets):
+    x = torch.tensor([[2.0, 0.0]], requires_grad=True)
+    y = torch.tensor([0])
+    if column_targets:
+        y = y[:, None].float()  # CLAM's target shape and dtype.
+
+    loss = SmoothTop1SVM(n_classes=2)(x, y)
+    torch.testing.assert_close(loss, torch.nn.functional.softplus(torch.tensor(-1.0)))
+    loss.backward()
+    expected_grad = torch.tensor([[-1.0, 1.0]]) * torch.sigmoid(torch.tensor(-1.0))
+    torch.testing.assert_close(x.grad, expected_grad)
+
+
+@pytest.mark.parametrize("column_targets", [False, True])
+def test_smooth_top1_svm_batch_duplication(column_targets):
+    x = torch.zeros(1, 2)
+    y = torch.tensor([0])
+    if column_targets:
+        y = y[:, None]
+    loss_fn = SmoothTop1SVM(n_classes=2)
+    expected = torch.nn.functional.softplus(torch.tensor(1.0))
+
+    torch.testing.assert_close(loss_fn(x, y), expected)
+    duplicated = loss_fn(x.repeat(2, 1), y.repeat_interleave(2, dim=0))
+    torch.testing.assert_close(duplicated, expected)
+
+
+@pytest.mark.parametrize("column_targets", [False, True])
+@pytest.mark.parametrize("batch_size", [1, 3])
+def test_smooth_top1_svm_hard_loss(column_targets, batch_size):
+    x = torch.tensor([[0.0, 10.0], [10.0, 0.0], [0.0, 10.0]])[:batch_size]
+    y = torch.tensor([0, 0, 1])[:batch_size]
+    if column_targets:
+        y = y[:, None]
+    loss_fn = SmoothTop1SVM(n_classes=2)
+    expected = torch.tensor([11.0, 0.0, 0.0])[:batch_size]
+
+    torch.testing.assert_close(loss_fn.hard_loss(x, y), expected)
+    torch.testing.assert_close(loss_fn(x, y), expected.mean())
