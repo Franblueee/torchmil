@@ -131,3 +131,33 @@ def test_prob_smooth_attention_pool_all_returns(covar_mode):
     else:
         assert log_diag_Sigma_f is None
     assert kl_div.shape == ()
+
+
+@pytest.mark.parametrize("covar_mode", ["diag", "zero"])
+@pytest.mark.parametrize("sparse", [False, True])
+def test_regularization_ignores_padding(covar_mode, sparse):
+    torch.manual_seed(0)
+    pool = ProbSmoothAttentionPool(in_dim=3, att_dim=2, covar_mode=covar_mode)
+    X = torch.randn(2, 4, 3)
+    mask = torch.tensor([[1, 1, 0, 0], [1, 1, 1, 1]], dtype=torch.uint8)
+    X[mask == 0] = 10
+    adj = torch.zeros(2, 4, 4)
+    adj[0, :2, :2] = 0.5
+    adj[1] = 0.25
+
+    # A padded batch should have the same mean regularizer as its real bags.
+    expected = []
+    for i, size in enumerate([2, 4]):
+        graph = adj[i : i + 1, :size, :size]
+        if sparse:
+            graph = graph.to_sparse()
+        _, regularizer = pool(
+            X[i : i + 1, :size], graph, return_kl_div=True, n_samples=1
+        )
+        expected.append(regularizer)
+    expected = torch.stack(expected).mean()
+
+    if sparse:
+        adj = adj.to_sparse()
+    _, actual = pool(X, adj, mask, return_kl_div=True, n_samples=1)
+    torch.testing.assert_close(actual, expected)

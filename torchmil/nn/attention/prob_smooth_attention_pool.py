@@ -111,19 +111,21 @@ class ProbSmoothAttentionPool(torch.nn.Module):
         return f
 
     def _kl_div(
-        self, mu_f: Tensor, log_diag_Sigma_f: Tensor, adj_mat: Tensor
+        self, mu_f: Tensor, log_diag_Sigma_f: Tensor, adj_mat: Tensor, mask: Tensor
     ) -> Tensor:
         """
         Arguments:
             mu_f: Mean of the attention distribution of shape `(batch_size, bag_size, 1)`.
             log_diag_Sigma_f: Log diagonal of covariance of the attention distribution of shape `(batch_size, bag_size, 1)`.
             adj_mat: Adjacency matrix of shape `(batch_size, bag_size, bag_size)`.
+            mask: Mask of shape `(batch_size, bag_size, 1)`.
 
         Returns:
             kl_div: KL divergence of shape `()`.
         """
 
-        bag_size = float(mu_f.shape[1])
+        mu_f = mu_f.masked_fill(mask == 0, 0)
+        bag_size = mask.sum(dim=(1, 2))
         inv_bag_size = 1.0 / bag_size
 
         if not adj_mat.is_sparse:
@@ -150,7 +152,8 @@ class ProbSmoothAttentionPool(torch.nn.Module):
         if self.covar_mode == "full":
             raise NotImplementedError("covar_mode='full' is not implemented yet")
         elif self.covar_mode == "diag":
-            diag_Sigma = torch.exp(log_diag_Sigma_f)  # (batch_size, bag_size, 1)
+            log_diag_Sigma_f = log_diag_Sigma_f.masked_fill(mask == 0, 0)
+            diag_Sigma = torch.exp(log_diag_Sigma_f) * mask  # (batch_size, bag_size, 1)
             tr_Sigma = inv_bag_size * torch.sum(diag_Sigma, dim=(1, 2))  # (batch_size,)
             tr_adj_Sigma = inv_bag_size * torch.sum(
                 diag_adj * diag_Sigma, dim=(1, 2)
@@ -230,7 +233,7 @@ class ProbSmoothAttentionPool(torch.nn.Module):
         z = torch.bmm(X.transpose(1, 2), s)  # (batch_size, d, n_samples)
 
         if return_kl_div:
-            kl_div = self._kl_div(mu_f, log_diag_Sigma_f, adj)  # ()
+            kl_div = self._kl_div(mu_f, log_diag_Sigma_f, adj, mask)  # ()
             if return_att_samples:
                 if return_att_dist:
                     return z, f, mu_f, log_diag_Sigma_f, kl_div
