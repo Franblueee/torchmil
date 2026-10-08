@@ -90,3 +90,19 @@ class TestMultiheadSelfAttention:
         )
         output = layer(sample_input)
         assert output.shape == (2, 5, out_dim)
+
+    @pytest.mark.parametrize("training", [False, True])
+    @pytest.mark.parametrize("return_att", [False, True])
+    def test_dropout_respects_training_mode(self, training, return_att):
+        # Full dropout makes the expected output deterministic in both modes.
+        layer = MultiheadSelfAttention(
+            in_dim=4, n_heads=4, dropout=1.0, learn_weights=False
+        ).train(training)
+        sample_input = torch.ones(1, 8, 4)
+
+        output = layer(sample_input, return_att=return_att)
+        if return_att:
+            output, _ = output
+
+        expected = torch.zeros_like(sample_input) if training else sample_input
+        torch.testing.assert_close(output, expected)

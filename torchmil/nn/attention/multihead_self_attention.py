@@ -114,7 +114,7 @@ class MultiheadSelfAttention(torch.nn.Module):
         else:
             with torch.nn.attention.sdpa_kernel(SDP_BACKEND):
                 out = torch.nn.functional.scaled_dot_product_attention(
-                    query, key, value, mask, self.dropout
+                    query, key, value, mask, self.dropout if self.training else 0.0
                 )  # (batch_size, n_heads, seq_len, head_dim)
             return out
 
