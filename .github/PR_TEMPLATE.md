@@ -22,7 +22,7 @@
 - [ ] My change requires a change to the documentation.
 - [ ] I have updated the documentation accordingly.
 - [ ] I have reformatted the code.
-- [ ] I have ensured `cd docs && make spelling && make html` pass (**required** if documentation has been updated.)
+- [ ] I have ensured `mkdocs build` passes when run from the repository root (**required** if documentation has been updated.)
 
 ## Changelog
 <!--- List your changes here --->
