@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import pytest
@@ -108,3 +109,31 @@ def test_with_feature_extractor(sample_input, sample_mask):
 def test_with_invalid_distill_mode(sample_input, sample_mask):
     with pytest.raises(ValueError):
         DTFDMIL(in_shape=(20, 10), distill_mode="invalid_mode")
+
+
+# Masked padding must not change the bag prediction
+@pytest.mark.parametrize("distill_mode", ["maxmin", "max", "afs"])
+def test_masked_padding_does_not_change_prediction(distill_mode):
+    torch.manual_seed(0)
+    model = DTFDMIL(in_shape=(3,), att_dim=2, n_groups=1, distill_mode=distill_mode)
+    model.eval()
+    X = torch.randn(2, 5, 3)
+    mask = torch.ones(2, 5, dtype=torch.bool)
+    padded_X = torch.nn.functional.pad(X, (0, 0, 0, 4))
+    padded_mask = torch.nn.functional.pad(mask, (0, 4), value=False)
+
+    # One group keeps every real instance together regardless of the shuffle.
+    with torch.no_grad():
+        np.random.seed(0)
+        expected = model(X, mask)
+        np.random.seed(0)
+        actual = model(padded_X, padded_mask)
+
+    torch.testing.assert_close(actual, expected)
+
+
+@pytest.mark.parametrize("distill_mode", ["maxmin", "max", "afs"])
+def test_forward_pass_without_mask(distill_mode, sample_input):
+    model = DTFDMIL(in_shape=(20, 10), distill_mode=distill_mode)
+    Y_pred = model(sample_input)
+    assert Y_pred.shape == (2,)

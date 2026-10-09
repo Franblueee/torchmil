@@ -111,6 +111,10 @@ class DTFDMIL(MILModel):
         else:
             n_groups = self.n_groups
 
+        if mask is None:
+            mask = torch.ones(batch_size, bag_size, device=X.device)
+        mask = mask.bool()
+
         bag_index = np.arange(0, bag_size)
         np.random.shuffle(bag_index)
         bag_chunks = np.array_split(bag_index, n_groups)
@@ -120,10 +124,11 @@ class DTFDMIL(MILModel):
 
         pseudo_pred_list = []
         pseudo_feat_list = []
+        pseudo_mask_list = []
         inst_cam_list = []
         for bag_chunk in bag_chunks:
             X_chunk = X[:, bag_chunk, :]
-            mask_chunk = mask[:, bag_chunk].bool() if mask is not None else None
+            mask_chunk = mask[:, bag_chunk]  # (batch_size, chunk_size)
             chunk_size = X_chunk.size(1)
 
             z = self.attention_pool(
@@ -141,6 +146,7 @@ class DTFDMIL(MILModel):
 
             if self.distill_mode == "afs":
                 pseudo_feat = z.unsqueeze(1)  # (batch_size, 1, feat_dim)
+                pseudo_mask = mask_chunk.any(dim=1, keepdim=True)  # (batch_size, 1)
             else:
                 inst_cam_max = inst_cam.masked_fill(
                     ~mask_chunk, -1e9
@@ -174,6 +180,9 @@ class DTFDMIL(MILModel):
                     pseudo_feat = torch.gather(
                         X_chunk, 1, index
                     )  # (batch_size, 2*chunk_size, feat_dim)
+                    pseudo_mask = torch.gather(
+                        mask_chunk, 1, topk_idx
+                    )  # (batch_size, 2*chunk_size)
                 elif self.distill_mode == "max":
                     index = topk_idx_max.unsqueeze(-1).expand(
                         -1, -1, feat_dim
@@ -181,8 +190,12 @@ class DTFDMIL(MILModel):
                     pseudo_feat = torch.gather(
                         X_chunk, 1, index
                     )  # (batch_size, chunk_size, feat_dim)
+                    pseudo_mask = torch.gather(
+                        mask_chunk, 1, topk_idx_max
+                    )  # (batch_size, chunk_size)
 
             pseudo_feat_list.append(pseudo_feat)
+            pseudo_mask_list.append(pseudo_mask)
 
         pseudo_pred = torch.cat(pseudo_pred_list, dim=1)  # (batch_size, n_groups]
         pseudo_feat = torch.cat(
@@ -192,7 +205,11 @@ class DTFDMIL(MILModel):
             batch_size, -1, feat_dim
         )  # (batch_size, n_groups*k, feat_dim)
 
-        pseudo_z = self.u_attention_pool(pseudo_feat)  # (batch_size, feat_dim)
+        pseudo_mask = torch.cat(pseudo_mask_list, dim=1)  # (batch_size, n_groups*k)
+
+        pseudo_z = self.u_attention_pool(
+            pseudo_feat, pseudo_mask
+        )  # (batch_size, feat_dim)
         Y_pred = self.u_classifier(pseudo_z)  # (batch_size, 1]
         Y_pred = Y_pred.squeeze(-1)  # (batch_size,]
 
