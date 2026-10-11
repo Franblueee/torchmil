@@ -42,11 +42,11 @@ class CAMILSelfAttention(nn.Module):
         """
 
         if mask is not None:
-            mask = (
+            pair_mask = (
                 mask[:, :, None] * mask[:, None, :]
             )  # (batch_size, bag_size, bag_size)
         else:
-            mask = torch.ones(
+            pair_mask = torch.ones(
                 X.shape[0], X.shape[1], X.shape[1], device=X.device, dtype=X.dtype
             )  # (batch_size, bag_size, bag_size)
 
@@ -61,11 +61,11 @@ class CAMILSelfAttention(nn.Module):
         if adj.is_sparse:
             adj = adj.to_dense()
 
-        w = inv_scale * (q.matmul(k.transpose(-2, -1)) * adj * mask).sum(
+        w = inv_scale * (q.matmul(k.transpose(-2, -1)) * adj * pair_mask).sum(
             dim=-1, keepdim=True
         )  # (batch_size, bag_size, 1)
 
-        L = w.softmax(dim=1) * v  # (batch_size, bag_size, in_dim)
+        L = masked_softmax(w, mask) * v  # (batch_size, bag_size, in_dim)
 
         return L
 
@@ -239,7 +239,7 @@ class CAMIL(MILModel):
 
         X = self.feat_ext(X)  # (batch_size, bag_size, feat_dim)
         T = self.nystrom_transformer_layer(
-            self.fc1(X)
+            self.fc1(X), mask
         )  # (batch_size, bag_size, feat_dim)
 
         L = self.camil_self_attention(T, adj, mask)  # (batch_size, bag_size, feat_dim)

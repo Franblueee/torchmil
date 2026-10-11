@@ -1,7 +1,10 @@
 import pytest
 import torch
 
-from torchmil.nn.attention.nystrom_attention import NystromAttention
+from torchmil.nn.attention.nystrom_attention import (
+    NystromAttention,
+    moore_penrose_iter_pinv,
+)
 
 
 def create_random_input(batch_size, seq_len, in_dim):
@@ -93,3 +96,94 @@ class TestNystromAttention:
         )
         output = layer(x)
         assert output.shape == (batch_size, seq_len, out_dim)
+
+    # A sequence must get the same output alone and padded in a batch with a longer one.
+    # Its landmarks come from its own length (5), not from the padded length (9).
+    @pytest.mark.parametrize("learn_weights", [True, False])
+    def test_masked_padding_does_not_change_output(self, learn_weights):
+        torch.manual_seed(0)
+        layer = NystromAttention(
+            in_dim=8, att_dim=8, n_heads=2, n_landmarks=4, learn_weights=learn_weights
+        )
+        short_x = torch.randn(1, 5, 8)
+        long_x = torch.randn(1, 9, 8)
+        # The padding holds arbitrary values, which the mask must hide.
+        padded_x = torch.cat(
+            [torch.nn.functional.pad(short_x, (0, 0, 0, 4), value=7.0), long_x]
+        )
+        mask = torch.ones(2, 9, dtype=torch.bool)
+        mask[0, 5:] = False
+
+        with torch.no_grad():
+            short_out, short_att = layer(short_x, return_att=True)
+            long_out, long_att = layer(long_x, return_att=True)
+            actual_out, actual_att = layer(padded_x, mask=mask, return_att=True)
+
+        torch.testing.assert_close(actual_out[:1, :5], short_out)
+        torch.testing.assert_close(actual_out[1:], long_out)
+        torch.testing.assert_close(actual_att[:1, :, :5, :5], short_att)
+        torch.testing.assert_close(actual_att[1:], long_att)
+        # masked positions produce nothing and receive no attention
+        assert (actual_out[0, 5:] == 0).all()
+        assert (actual_att[0, :, 5:, :] == 0).all()
+        assert (actual_att[0, :, :, 5:] == 0).all()
+
+    def test_masked_positions_can_be_anywhere(self):
+        torch.manual_seed(0)
+        layer = NystromAttention(in_dim=8, att_dim=8, n_heads=2, n_landmarks=4)
+        x = torch.randn(1, 5, 8)
+        mask = torch.tensor([[False, True, True, False, True, False, True, True]])
+        scattered_x = torch.full((1, 8, 8), 7.0)
+        scattered_x[mask] = x[0]
+
+        with torch.no_grad():
+            expected = layer(x)
+            actual = layer(scattered_x, mask=mask)
+
+        torch.testing.assert_close(actual[mask], expected[0])
+        assert (actual[~mask] == 0).all()
+
+    def test_full_mask_matches_no_mask(self):
+        torch.manual_seed(0)
+        layer = NystromAttention(in_dim=8, att_dim=8, n_heads=2, n_landmarks=4)
+        x = torch.randn(2, 9, 8)
+
+        with torch.no_grad():
+            expected = layer(x)
+            actual = layer(x, mask=torch.ones(2, 9))
+
+        torch.testing.assert_close(actual, expected)
+
+    def test_sequences_in_a_batch_do_not_affect_each_other(self):
+        torch.manual_seed(0)
+        layer = NystromAttention(in_dim=8, att_dim=8, n_heads=2, n_landmarks=4)
+        x = torch.randn(3, 9, 8)
+
+        with torch.no_grad():
+            expected = torch.cat([layer(x[i : i + 1]) for i in range(3)])
+            actual = layer(x)
+
+        torch.testing.assert_close(actual, expected)
+
+
+def test_pinv_batch_elements_do_not_affect_each_other():
+    # The iteration starts from a scaled matrix. Scaling with the largest values of
+    # the whole batch would make each result depend on the other matrices.
+    torch.manual_seed(0)
+    x = torch.randn(3, 2, 4, 4).softmax(dim=-1)
+    x[1] = x[1] * 100
+
+    expected = torch.cat([moore_penrose_iter_pinv(x[i : i + 1]) for i in range(3)])
+    actual = moore_penrose_iter_pinv(x)
+
+    torch.testing.assert_close(actual, expected)
+
+
+def test_pinv_single_matrix():
+    torch.manual_seed(0)
+    x = torch.randn(4, 4).softmax(dim=-1)
+
+    expected = moore_penrose_iter_pinv(x[None])
+    actual = moore_penrose_iter_pinv(x)
+
+    torch.testing.assert_close(actual, expected)
