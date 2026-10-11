@@ -1,6 +1,5 @@
-from math import ceil
 import torch
-from einops import rearrange, reduce
+from einops import rearrange
 
 
 def moore_penrose_iter_pinv(x, iters=6):
@@ -9,7 +8,13 @@ def moore_penrose_iter_pinv(x, iters=6):
     abs_x = torch.abs(x)
     col = abs_x.sum(dim=-1)
     row = abs_x.sum(dim=-2)
-    z = rearrange(x, "... i j -> ... j i") / (torch.max(col) * torch.max(row))
+    # each batch element is scaled by its own maxima, so that it does not depend on the rest of the batch
+    batch_shape = x.shape[:1] if x.dim() > 2 else ()
+    scale = col.reshape(*batch_shape, -1).amax(dim=-1) * row.reshape(
+        *batch_shape, -1
+    ).amax(dim=-1)
+    scale = scale.reshape(*batch_shape, *([1] * (x.dim() - len(batch_shape))))
+    z = rearrange(x, "... i j -> ... j i") / scale
 
     Id = torch.eye(x.shape[-1], device=device)
     Id = rearrange(Id, "i j -> () i j")
@@ -104,7 +109,7 @@ class NystromAttention(torch.nn.Module):
 
         Arguments:
             x: Input tensor of shape `(batch_size, seq_len, in_dim)`.
-            mask: Mask tensor of shape `(batch_size, seq_len)`.
+            mask: Mask tensor of shape `(batch_size, seq_len)`. Each sequence is processed as if its masked positions were not there.
             return_att: Whether to return attention weights.
 
         Returns:
@@ -113,8 +118,24 @@ class NystromAttention(torch.nn.Module):
         """
 
         batch_size, seq_len, _ = x.size()
+        device = x.device
 
         # m = num_landmarks, h = heads, d = head_dim, iters = pinv_iterations, eps = eps
+
+        if mask is None:
+            mask = torch.ones(batch_size, seq_len, device=device)
+        mask = mask.bool()
+
+        # move the masked positions to the front, keeping the order of the rest
+
+        has_masked = not bool(mask.all())
+        if has_masked:
+            order = torch.argsort(
+                mask.int(), dim=1, stable=True
+            )  # (batch_size, seq_len)
+            x = torch.gather(x, 1, order[..., None].expand_as(x))
+            mask = torch.gather(mask, 1, order)
+            x = x * mask[..., None]
 
         # pad so that sequence can be evenly divided into m landmarks
 
@@ -124,12 +145,21 @@ class NystromAttention(torch.nn.Module):
             x = torch.nn.functional.pad(
                 x, (0, 0, padding, 0), value=0
             )  # (batch_size, seq_len + padding, att_dim)
-
-            if mask is not None:
-                mask = torch.nn.functional.pad(
-                    mask, (padding, 0), value=False
-                )  # (batch_size, seq_len + padding)
+            mask = torch.nn.functional.pad(
+                mask, (padding, 0), value=False
+            )  # (batch_size, seq_len + padding)
         new_seq_len = x.size(1)
+
+        # each sequence uses the positions it would use if it was alone in the batch:
+        # its non-masked positions, preceded by the zeros needed to evenly divide them into m landmarks
+
+        lm = (mask.sum(dim=1) + self.n_landmarks - 1) // self.n_landmarks
+        lm = lm.clamp(min=1)  # (batch_size,)
+        start = new_seq_len - lm * self.n_landmarks  # (batch_size,)
+        position = torch.arange(new_seq_len, device=device)
+        position = position[None, :] - start[:, None]  # (batch_size, new_seq_len)
+        used = position >= 0  # (batch_size, new_seq_len)
+
         q, k, v = self._qkv(
             x
         )  # (batch_size, new_seq_len, att_dim), (batch_size, new_seq_len, att_dim), (batch_size, new_seq_len, att_dim)
@@ -143,35 +173,21 @@ class NystromAttention(torch.nn.Module):
             0, 2, 1, 3
         )  # (batch_size, n_heads, new_seq_len, head_dim)
 
-        # set masked positions to 0 in queries, keys, values
-
-        if mask is not None:
-            mask = mask[:, None, :]
-            q, k, v = map(lambda t: t * mask[..., None], (q, k, v))
-
         q = q * self.scale_factor
 
-        # generate landmarks by sum reduction, and then calculate mean using the mask
+        # generate landmarks by sum reduction of the lm consecutive positions assigned to each of them,
+        # and then calculate mean. Positions that are not used are zero, so they add nothing
 
-        lm = ceil(seq_len / self.n_landmarks)
-        landmark_einops_eq = "... (n lm) d -> ... n d"
-        q_landmarks = reduce(
-            q, landmark_einops_eq, "sum", lm=lm
+        landmark = (position // lm[:, None]).clamp(min=0)  # (batch_size, new_seq_len)
+        landmark = landmark[:, None, :, None].expand_as(q)
+        landmarks_shape = (batch_size, self.n_heads, self.n_landmarks, q.size(-1))
+        divisor = lm[:, None, None, None]
+        q_landmarks = (
+            q.new_zeros(landmarks_shape).scatter_add(2, landmark, q) / divisor
         )  # (batch_size, n_heads, n_landmarks, head_dim)
-        k_landmarks = reduce(
-            k, landmark_einops_eq, "sum", lm=lm
+        k_landmarks = (
+            k.new_zeros(landmarks_shape).scatter_add(2, landmark, k) / divisor
         )  # (batch_size, n_heads, n_landmarks, head_dim)
-
-        # calculate landmark mask, and also get sum of non-masked elements in preparation for masked mean
-
-        divisor = lm
-        if mask is not None:
-            mask_landmarks_sum = reduce(mask, "... (n lm) -> ... n", "sum", lm=lm)
-            divisor = mask_landmarks_sum[..., None] + self.eps
-            mask_landmarks = mask_landmarks_sum > 0
-
-        q_landmarks = q_landmarks / divisor
-        k_landmarks = k_landmarks / divisor
 
         # similarities
 
@@ -180,19 +196,11 @@ class NystromAttention(torch.nn.Module):
         sim2 = torch.einsum(einops_eq, q_landmarks, k_landmarks)
         sim3 = torch.einsum(einops_eq, q_landmarks, k)
 
-        # masking
+        # masking: the positions a sequence does not use receive no attention
 
-        if mask is not None:
+        if has_masked:
             mask_value = -torch.finfo(q.dtype).max
-            sim1 = sim1.masked_fill(
-                ~(mask[..., None] * mask_landmarks[..., None, :]), mask_value
-            )
-            sim2 = sim2.masked_fill(
-                ~(mask_landmarks[..., None] * mask_landmarks[..., None, :]), mask_value
-            )
-            sim3 = sim3.masked_fill(
-                ~(mask_landmarks[..., None] * mask[..., None, :]), mask_value
-            )
+            sim3 = sim3.masked_fill(~used[:, None, None, :], mask_value)
 
         # eq (15) in the paper and aggregate values
 
@@ -216,10 +224,23 @@ class NystromAttention(torch.nn.Module):
         out = self.out_proj(out)  # (batch_size, new_seq_len, att_dim)
         out = out[:, -seq_len:]  # remove padding
 
+        # restore the original order, with zeros in the masked positions
+
+        if has_masked:
+            mask = mask[:, -seq_len:]  # (batch_size, seq_len)
+            out = out * mask[..., None]
+            out = torch.zeros_like(out).scatter(1, order[..., None].expand_as(out), out)
+
         if return_att:
             attn = attn1 @ attn2_inv @ attn3
             # remove padding
             attn = attn[:, :, -seq_len:, -seq_len:]
+            if has_masked:
+                attn = attn * mask[:, None, :, None] * mask[:, None, None, :]
+                row_order = order[:, None, :, None].expand_as(attn)
+                col_order = order[:, None, None, :].expand_as(attn)
+                attn = torch.zeros_like(attn).scatter(2, row_order, attn)
+                attn = torch.zeros_like(attn).scatter(3, col_order, attn)
             return out, attn
         else:
             return out
